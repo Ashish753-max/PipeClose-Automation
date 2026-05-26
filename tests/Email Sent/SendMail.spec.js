@@ -171,5 +171,9 @@ test("valid login", async ({ page }) => {
     throw error;
   }
 
+  // Nevigate to sent section
+  await page.getByRole('button', { name: 'Sent' }).click();
+
+
 });
 
