@@ -1,15 +1,26 @@
 const { test, expect } = require('@playwright/test');
 
 test("valid login", async ({ page }) => {
+  const sender = "ashish.rai@appnox.ai";
+  const recipient = "dev.bisht@appnox.ai";
+  const subject = "CRM Testing";
   try {
     // Navigate to application with error handling
     try {
-      await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
+      await page.goto("https://staging.pipeclose.com/", { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('domcontentloaded');
     } catch (error) {
       throw new Error(`Failed to navigate to website: ${error.message}`);
     }
-            await page.getByRole('button', { name: 'Log in', exact: true }).click();
+    // Dismiss cookie consent if shown
+    const acceptCookies = page.getByRole('button', { name: 'Accept', exact: true });
+    await acceptCookies.click({ timeout: 5000 }).catch(() => {});
+
+    // Open login form unless it is already shown
+    const loginBtn = page.getByRole('button', { name: 'Log in', exact: true });
+    const emailInput = page.getByPlaceholder("Email");
+    await loginBtn.or(emailInput).first().waitFor({ state: 'visible', timeout: 15000 });
+    if (await loginBtn.isVisible()) await loginBtn.click();
 
     await page.waitForTimeout(1000);
 
@@ -68,7 +79,7 @@ test("valid login", async ({ page }) => {
     try {
   const composeButton = page.getByRole('button', { name: /Compose Mail/i });
 
-  await composeButton.waitFor({ state: 'visible', timeout: 10000 });
+  await composeButton.waitFor({ state: 'visible', timeout: 30000 });
   await composeButton.click();
 
 } catch (error) {
@@ -83,18 +94,39 @@ test("valid login", async ({ page }) => {
  // select the email
   await page.getByText("Active").click();   */
 
+    // Select ashish.rai@appnox.ai in the From field if it is not already selected
+    try {
+      const fromSelect = page.getByRole('combobox').filter({ has: page.locator('span', { hasText: '@' }) }).first();
+      await fromSelect.waitFor({ state: 'visible', timeout: 10000 });
+      if (!(await fromSelect.innerText()).includes(sender)) {
+        await fromSelect.click();
+        await page.getByRole('option', { name: sender }).first().click();
+      }
+      await expect(fromSelect).toContainText(sender);
+    } catch (error) {
+      throw new Error(`Failed to select sender ${sender}: ${error.message}`);
+    }
+
     // Enter recipient email with error handling
     try {
       const recipientInput = page.getByPlaceholder("Add recipients...");
       if (!await recipientInput.isVisible({ timeout: 5000 })) {
         throw new Error("Recipient email input not found");
       }
-      await recipientInput.fill('dev.bisht@appnox.ai');
+      await recipientInput.fill(recipient);
       await page.waitForTimeout(1000);
     
       // Press Enter to add recipient
       await page.keyboard.press('Enter');
       await page.waitForTimeout(500);
+
+      // Recipient must be added as a chip and the input cleared
+      const toRow = page.locator('label', { hasText: /^To$/ }).locator('xpath=..');
+      await expect(toRow.getByText(recipient, { exact: true })).toBeVisible({ timeout: 5000 });
+
+      // Close any suggestion popup that may block the rest of the form
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
     } catch (error) {
       throw new Error(`Failed to enter recipient email: ${error.message}`);
     }
@@ -106,7 +138,7 @@ test("valid login", async ({ page }) => {
       if (!await subjectField.isVisible({ timeout: 5000 })) {
         throw new Error("Subject field not visible");
       }
-      await subjectField.fill("CRM Testing");
+      await subjectField.fill(subject);
       await page.waitForTimeout(500);
     } catch (error) {
       throw new Error(`Failed to enter subject: ${error.message}`);
@@ -114,7 +146,7 @@ test("valid login", async ({ page }) => {
 
     // Enter the description with error handling
     try {
-      const emailEditor = page.locator('p[data-placeholder="Write your message here..."]');
+      const emailEditor = page.locator('[contenteditable="true"] p').first();
       if (!await emailEditor.isVisible({ timeout: 5000 })) {
         throw new Error("Email editor not visible");
       }
@@ -163,6 +195,43 @@ test("valid login", async ({ page }) => {
 
     //  await page.waitForTimeout(9000);
 
+
+    // Verify the email is present in the Sent folder with the correct recipient
+    try {
+      // Wait for the send confirmation toast, then let it close so it isn't matched below
+      const toast = page.getByText('Your email has been sent successfully');
+      await toast.waitFor({ state: 'visible', timeout: 15000 });
+      await toast.waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
+
+      // Switch the sidebar mailbox to the sender account if it is not already selected
+      const senderMailbox = page.getByRole('button', { name: sender });
+      if (!await senderMailbox.first().isVisible()) {
+        await page.getByRole('button', { name: /\S+@\S+\.\S+/ }).first().click();
+        await senderMailbox.first().click();
+      }
+
+      await page.getByText(/^Sent$/).first().click();
+      await expect(page).toHaveURL(/folder=sent/i);
+
+      // Open the newest matching email at the top of the Sent list
+      const sentEmail = page.getByText(subject, { exact: true }).first();
+      await expect(sentEmail).toBeVisible({ timeout: 60000 });
+      // The live list can re-render during the click, so retry until the email opens
+      await expect(async () => {
+        if (await page.getByText(`<${sender}>`).first().isVisible()) return;
+        await sentEmail.click({ timeout: 5000 });
+        await expect(page.getByText(`<${sender}>`).first()).toBeVisible({ timeout: 5000 });
+      }).toPass({ timeout: 30000 });
+
+      // The sender and recipient email addresses must be shown in the opened email
+      await expect(page.getByText(`<${sender}>`).first()).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(`to ${recipient}`).first()).toBeVisible({ timeout: 20000 });
+      console.log(`Email "${subject}" found in Sent folder, from ${sender} to ${recipient}.`);
+      await page.screenshot({ path: 'screenshots/SendMail-sent-verified.png' });
+    } catch (error) {
+      await page.screenshot({ path: 'screenshots/SendMail-sent-verify-failed.png' });
+      throw new Error(`Sent email verification failed: ${error.message}`);
+    }
 
     // Take final screenshot
     await page.screenshot({ path: 'screenshots/SendMail-end.png' });

@@ -2,9 +2,9 @@ const { test, expect } = require('@playwright/test');
 test("Deal Creation",async function ({page, context}) {
 
     // Launch the page
-    await page.goto("https://pipeclose.com/")
+    await page.goto("https://staging.pipeclose.com/")
 
-        await page.getByRole('button', { name: 'Log in', exact: true }).click();
+        { const loginBtn = page.getByRole('button', { name: 'Log in', exact: true }); if (await loginBtn.isVisible({ timeout: 5000 }).catch(() => false)) await loginBtn.click(); }
 
 
         await page.waitForTimeout(1000);

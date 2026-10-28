@@ -4,20 +4,27 @@ test("valid login", async function ({ page }) {
 
     // Navigate to application with error handling
     try {
-      await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
+      await page.goto("https://staging.pipeclose.com/", { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('domcontentloaded');
     } catch (error) {
       throw new Error(`Failed to navigate to website: ${error.message}`);
     }
-    await page.getByRole('button', { name: 'Log in', exact: true }).click();
+    // Dismiss cookie consent if shown
+    const acceptCookies = page.getByRole('button', { name: 'Accept', exact: true });
+    await acceptCookies.click({ timeout: 5000 }).catch(() => {});
+
+    // Open login form unless it is already shown
+    const loginBtn = page.getByRole('button', { name: 'Log in', exact: true });
+    const emailInput = page.getByPlaceholder("Email");
+    await loginBtn.or(emailInput).first().waitFor({ state: 'visible', timeout: 15000 });
+    if (await loginBtn.isVisible()) await loginBtn.click();
     await page.waitForTimeout(1000);
 
     // Login with validation
     try {
       const emailField = page.getByPlaceholder("Email");
-      if (!await emailField.isVisible({ timeout: 5000 })) {
-        throw new Error("Email field not visible on login page");
-      }
+      await emailField.waitFor({ state: 'visible', timeout: 15000 })
+        .catch(() => { throw new Error("Email field not visible on login page"); });
       await emailField.fill("ashishappnox1@gmail.com");
       await page.waitForTimeout(500);
 
@@ -64,6 +71,12 @@ test("valid login", async function ({ page }) {
 
     await page.waitForTimeout(1000);
 
+    // Count existing leads with the same name so the new one can be detected
+    const leadName = 'Vijay';
+    const leadRows = page.getByText(leadName, { exact: true });
+    await page.waitForTimeout(3000);
+    const countBefore = await leadRows.count();
+
     // Click on the +Lead button to create a new lead
     const plusLeadButton = page.locator('button:has(svg.lucide-plus)', { hasText: "Lead" });
     await plusLeadButton.waitFor({ state: 'visible', timeout: 10000 });
@@ -95,10 +108,15 @@ await page.getByPlaceholder('Email').fill('vijay.appnox@gmail.com');
 await page.waitForTimeout(1500);
 
 // Click on save button
-await page.getByRole('button', { name: 'Save' }).click();
+const saveButton = page.getByRole('button', { name: 'Save' });
+await saveButton.click();
 
-// Wait for the page to complete the save action
-await page.waitForTimeout(3000);
+// The Add lead form must close after a successful save
+await expect(page.getByRole('heading', { name: 'Add lead' })).toBeHidden({ timeout: 30000 });
+
+// The Leads list must contain one more lead with this name than before
+await expect.poll(() => leadRows.count(), { timeout: 30000 }).toBeGreaterThan(countBefore);
+console.log(`Lead "${leadName}" created (${countBefore} -> ${await leadRows.count()} in Leads list).`);
 
 // Take screenshot to see the result after lead creation
 await page.screenshot({ path: 'screenshots/Lead3-Created-Successfully.png' });
