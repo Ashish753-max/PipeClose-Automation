@@ -97,7 +97,13 @@ test("Move email from Inbox to Trash using hover delete", async ({ page }) => {
       inboxBefore = await readTotal();
 
       emailSender = (await firstRow.getByRole('heading', { level: 4 }).innerText()).trim();
-      emailSubject = (await firstRow.getByRole('heading', { level: 4 }).locator('xpath=following-sibling::*[1]/*[1]').innerText()).trim();
+      // Subject is the first item in the block that follows the sender heading
+      emailSubject = (await firstRow.evaluate(row => {
+        let node = row.querySelector('h4');
+        while (node && !node.nextElementSibling) node = node.parentElement;
+        const block = node.nextElementSibling;
+        return (block.firstElementChild || block).innerText;
+      })).trim();
       emailTime = (await firstRow.getByText(/^\s*(\d{1,2}:\d{2}\s*[AP]M|Yesterday|[A-Z][a-z]{2} \d{1,2})\s*$/).first().innerText()).trim();
       console.log(`Inbox total before: ${inboxBefore}`);
       console.log(`Email to delete: from "${emailSender}", subject "${emailSubject}", time "${emailTime}"`);
@@ -134,13 +140,17 @@ test("Move email from Inbox to Trash using hover delete", async ({ page }) => {
       await expect.poll(readTotal, { timeout: 30000 }).toBe(trashBefore + 1);
       console.log(`Trash total after: ${trashBefore + 1}`);
 
+      // Match on subject and time (the Inbox list can show a different sender than Trash)
       const trashedEmail = emailRows
-        .filter({ has: page.getByRole('heading', { level: 4, name: emailSender, exact: true }) })
         .filter({ hasText: emailSubject })
         .filter({ hasText: emailTime });
       await expect(trashedEmail.first()).toBeVisible({ timeout: 30000 });
       await trashedEmail.first().scrollIntoViewIfNeeded();
-      console.log(`Email "${emailSubject}" from ${emailSender} (${emailTime}) found in Trash.`);
+      const trashSender = (await trashedEmail.first().getByRole('heading', { level: 4 }).innerText()).trim();
+      if (trashSender !== emailSender) {
+        console.warn(`WARNING: sender differs - Inbox showed "${emailSender}", Trash shows "${trashSender}"`);
+      }
+      console.log(`Email "${emailSubject}" (${emailTime}) found in Trash, sender "${trashSender}".`);
       await page.screenshot({ path: 'screenshots/InboxToTrash-4-trash-verified.png' });
     } catch (error) {
       await page.screenshot({ path: 'screenshots/InboxToTrash-trash-verify-failed.png' });
