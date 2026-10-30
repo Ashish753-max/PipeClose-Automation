@@ -67,8 +67,11 @@ async function editField(page, { section, label, value, option = false, shown = 
   await expect(row.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
 
   if (option) {
-    await row.getByRole('combobox').or(row.getByRole('button').filter({ hasText: '(None)' })).first().click();
-    await page.getByText(value, { exact: true }).last().click();
+    // Retried: the page re-renders after the previous save, which can close the dropdown just opened
+    await expect(async () => {
+      await row.getByRole('combobox').or(row.getByRole('button').filter({ hasText: '(None)' })).first().click();
+      await page.getByText(value, { exact: true }).last().click({ timeout: 5000 });
+    }).toPass({ timeout: 30000 });
   } else {
     const input = row.locator('input:not([type=file]), textarea').first();
     await input.fill(value);
@@ -100,12 +103,15 @@ async function expectSavedAfterReload(page, fields) {
 const errorMessage = row => row.locator('[role="alert"], [class*="text-red"], [class*="text-destructive"]')
   .filter({ hasText: /\S/ });
 
+// Error toast at the top right, e.g. "Update Failed" + the server message (closes by itself)
+const errorToast = page => page.getByRole('heading', { level: 3, name: /fail|error/i }).locator('xpath=..');
+
 // Ignores formatting the box adds, e.g. "(987) 654-3210"
 const plain = text => text.replace(/[\s()+-]/g, '');
 
 /**
- * Types an invalid value, clicks Save and verifies it is refused: the editor stays open
- * with an error message and, after a reload, the valid value is still stored.
+ * Types an invalid value, clicks Save and verifies it is refused: an error message is shown
+ * (under the field or as a toast) and, after a reload, the valid value is still stored.
  * If the box itself refuses the characters and keeps the valid value, only the stored value is checked.
  * Soft assertion, so every invalid value in a test is checked and reported.
  * @param {import('@playwright/test').Page} page
@@ -135,7 +141,8 @@ async function expectRejected(page, valid, invalid, message) {
   await save.click({ timeout: 3000 }).catch(() => {}); // a disabled Save also refuses the value
   await page.waitForTimeout(2000);
   const editorOpen = await save.isVisible();
-  const error = editorOpen ? (await errorMessage(row).allInnerTexts()).join(' ') : '';
+  const error = [...(editorOpen ? await errorMessage(row).allInnerTexts() : []), ...await errorToast(page).allInnerTexts()]
+    .join(' ').replace(/\s+/g, ' ').trim();
   if (editorOpen) await row.getByRole('button', { name: 'Cancel', exact: true }).click();
 
   // The valid value must still be stored
@@ -160,4 +167,4 @@ async function expectRejected(page, valid, invalid, message) {
   if (changed) await editField(page, valid);
 }
 
-module.exports = { openNewDeal, fieldRow, editField, expectSavedAfterReload, expectRejected };
+module.exports = { openNewDeal, fieldRow, editField, expectSavedAfterReload, expectRejected, errorToast };

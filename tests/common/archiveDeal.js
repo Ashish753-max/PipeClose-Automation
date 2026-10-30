@@ -148,4 +148,4 @@ async function deleteArchivedDeal(page, deal, screenshot) {
   console.log(`Deleted deal ${deal.id}`);
 }
 
-module.exports = { findTodaysDeals, archiveDeal, deleteArchivedDeal };
+module.exports = { findTodaysDeals, archiveDeal, deleteArchivedDeal, openArchived };

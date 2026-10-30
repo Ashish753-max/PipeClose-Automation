@@ -3,12 +3,14 @@
 const { expect } = require('@playwright/test');
 const loginConfig = require('./loginConfig');
 
-// Login on staging; waits for whichever of "Log in" button / Email field shows first
+// Login on staging; waits for whichever of "Log in" link / Email field shows first
 async function loginStaging(page) {
   await page.goto('https://staging.pipeclose.com/', { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: 'Accept', exact: true }).click({ timeout: 4000 }).catch(() => {});
 
-  const loginBtn = page.getByRole('button', { name: 'Log in', exact: true });
+  // The home page shows it as a "Log in ↗" link (it used to be a button)
+  const loginBtn = page.getByRole('link', { name: /^Log in/ })
+    .or(page.getByRole('button', { name: 'Log in', exact: true })).first();
   const emailField = page.getByPlaceholder('Email');
   await loginBtn.or(emailField).first().waitFor({ state: 'visible', timeout: 30000 });
   if (await loginBtn.isVisible()) await loginBtn.click();

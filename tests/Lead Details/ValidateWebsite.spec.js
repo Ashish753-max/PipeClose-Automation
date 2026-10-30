@@ -1,0 +1,15 @@
+const { test } = require('@playwright/test');
+const { editField, expectRejected } = require('../common/dealDetails');
+const { openNewLead } = require('../common/leadDetails');
+
+test("Lead details - validation: invalid website is refused", async ({ page }) => {
+  test.setTimeout(240000);
+  await openNewLead(page);
+
+  const valid = { section: 'Organization', label: 'Website', value: 'pipeclose.com' };
+  await editField(page, valid);
+
+  for (const invalid of ['not a url', 'pipeclose,com', 'https://']) {
+    await expectRejected(page, valid, invalid);
+  }
+});
