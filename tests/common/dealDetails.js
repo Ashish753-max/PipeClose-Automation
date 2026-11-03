@@ -1,6 +1,6 @@
 // tests/common/dealDetails.js
 // Shared flow for the Deal Details scripts (tests/Deal Details/*.spec.js)
-const { expect } = require('@playwright/test');
+const { expect, test } = require('@playwright/test');
 const { createDeal } = require('./createDeal');
 
 // Field update request (the page also POSTs /deals/ai/analyze on its own, so match only this)
@@ -12,7 +12,9 @@ const UPDATE_URL = /\/api\/(persons|organisations|deals)\/\d+$/;
  * @returns {Promise<string>} the person name used for the deal
  */
 async function openNewDeal(page) {
-  const stamp = Date.now().toString().slice(-6);
+  // Worker index on the end: tests running in parallel can start in the same millisecond,
+  // and two deals with the same title would open the same card
+  const stamp = `${Date.now().toString().slice(-6)}${test.info().parallelIndex}`;
   const person = `Detail${stamp}`;
   await createDeal(page, {
     person,
