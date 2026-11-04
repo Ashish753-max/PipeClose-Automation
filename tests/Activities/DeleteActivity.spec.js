@@ -1,71 +1,49 @@
+// Activities > Delete an activity
+//   1. Create an Email activity for tomorrow
+//   2. Delete it from its menu: it leaves the list, and searching for it finds nothing
+//   3. Reload: it is still gone, also from the activities the page loads
+// Screenshots: screenshots/Activities/Delete-*.png
 const { test, expect } = require('@playwright/test');
+const {
+  uniqueTitle, openActivities, searchActivity, deleteActivity, deleteActivityById, createActivity,
+} = require('../common/activity');
 
-test("valid login", async ({ page }) => {
-  try {
-    // Navigate to application with error handling
-    try {
-      await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
-      await page.waitForLoadState('domcontentloaded');
-    } catch (error) {
-      throw new Error(`Failed to navigate to website: ${error.message}`);
-    }
-    await page.getByText('Sign in').click();
-    await page.waitForTimeout(1000);
+// If the test fails before deleting its activity, delete it here so no test data is left behind
+let activityId = null;
+test.afterEach(async ({ page }) => {
+  if (activityId) await deleteActivityById(page, activityId);
+  activityId = null;
+});
 
-    // Login with validation
-    try {
-      const emailField = page.getByPlaceholder("Email");
-      if (!await emailField.isVisible({ timeout: 5000 })) {
-        throw new Error("Email field not visible on login page");
-      }
-      await emailField.fill("ashishappnox1@gmail.com");
-      await page.waitForTimeout(500);
+test('Delete an activity', async ({ page }) => {
+  const title = uniqueTitle('Delete');
+  const noResults = page.getByRole('main').getByText('No activities found');
 
-      const passwordField = page.getByPlaceholder("Password");
-      if (!await passwordField.isVisible({ timeout: 5000 })) {
-        throw new Error("Password field not visible on login page");
-      }
-      await passwordField.fill("Ashish@567");
-      await page.waitForTimeout(500);
+  // Step 1: Create an Email activity for tomorrow
+  await openActivities(page);
+  const activity = await createActivity(page, 'Email', title);
+  activityId = activity.id;
+  const row = await searchActivity(page, title);
+  await expect(row).toBeVisible();
+  await page.screenshot({ path: 'screenshots/Activities/Delete-1-listed.png' });
 
-      const submitButton = page.locator("//button[@type='submit']");
-      if (!await submitButton.isVisible()) {
-        throw new Error("Submit button not found");
-      }
-      await submitButton.click();
-    } catch (error) {
-      throw new Error(`Login failed: ${error.message}`);
-    }
+  // Step 2: Delete it from its menu, then search again: nothing is found.
+  // (Search again because after a delete the app can show the full list while the old search text is still there.)
+  await deleteActivity(page, row);
+  activityId = null;
+  await expect(await searchActivity(page, title)).toHaveCount(0);
+  await expect(noResults, 'The search should find nothing').toBeVisible();
+  await page.screenshot({ path: 'screenshots/Activities/Delete-2-deleted.png' });
 
-    // Wait for dashboard to load
-    try {
-      await page.waitForLoadState("networkidle", { timeout: 10000 });
-      await page.waitForTimeout(2000);
-    } catch (error) {
-      console.warn(`Dashboard networkidle wait exceeded, continuing anyway: ${error.message}`);
-      await page.waitForTimeout(3000);
-    }
-
-    // Navigate to Activity section 
-    const activity = page.locator('a[href="/activities"]').first();
-    await activity.click();
-
-  } catch (error) {
-    console.error(error.message);
-  }
-
-  // click on the action dot 
-  await page.locator('button:has(svg.lucide-ellipsis)').first().click();
-
-  // click on the delete button
-          await page.getByText('Delete').click();
-
-          // Take final screenshot
-    await page.screenshot({ path: 'screenshots/DeleteActivity-end.png' });
-
-  
-
-  
-  
-
+  // Step 3: Reload: it is still gone
+  const [listResponse] = await Promise.all([
+    page.waitForResponse(res => res.url().endsWith('/api/activities') && res.request().method() === 'GET'),
+    page.reload(),
+  ]);
+  const { activities } = await listResponse.json();
+  const loadedIds = activities.map(item => item.id);
+  expect(loadedIds, 'The deleted activity should not be loaded').not.toContain(activity.id);
+  await expect(await searchActivity(page, title)).toHaveCount(0);
+  await expect(noResults).toBeVisible();
+  await page.screenshot({ path: 'screenshots/Activities/Delete-3-gone-after-reload.png' });
 });

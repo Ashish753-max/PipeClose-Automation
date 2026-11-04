@@ -136,4 +136,4 @@ async function scheduleActivity(page, { type, start, end }) {
   await expect(row).toHaveCount(0);
 }
 
-module.exports = { scheduleActivity };
+module.exports = { scheduleActivity, setTime };

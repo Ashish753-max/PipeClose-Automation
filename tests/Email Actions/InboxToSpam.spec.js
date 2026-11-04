@@ -30,11 +30,12 @@ test("Move email from Inbox to Spam using hover spam icon", async ({ page }) => 
     const acceptCookies = page.getByRole('button', { name: 'Accept', exact: true });
     await acceptCookies.click({ timeout: 5000 }).catch(() => {});
 
-    // Open login form unless it is already shown
-    const loginBtn = page.getByRole('button', { name: 'Log in', exact: true });
+    // Open the login page (the home page links to it as "Log in ↗") unless the form is already shown
+    const loginBtn = page.getByRole('link', { name: /^Log in/ }).first();
     const emailInput = page.getByPlaceholder("Email");
     await loginBtn.or(emailInput).first().waitFor({ state: 'visible', timeout: 15000 });
     if (await loginBtn.isVisible()) await loginBtn.click();
+    await emailInput.waitFor({ state: 'visible', timeout: 30000 });
 
     // Login
     try {

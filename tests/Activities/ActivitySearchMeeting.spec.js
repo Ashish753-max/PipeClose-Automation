@@ -4,12 +4,13 @@ test("valid login", async ({ page }) => {
   try {
     // Navigate to application with error handling
     try {
-      await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
+      await page.goto("https://staging.pipeclose.com/", { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('domcontentloaded');
     } catch (error) {
       throw new Error(`Failed to navigate to website: ${error.message}`);
     }
-    await page.getByText('Sign in').click();
+    await page.getByRole('link', { name: /^Log in/ }).first().click();
+    await page.getByPlaceholder('Email').waitFor({ timeout: 30000 });
     await page.waitForTimeout(1000);
 
     // Login with validation
