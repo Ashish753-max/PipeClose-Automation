@@ -110,7 +110,8 @@ This automation testing framework provides comprehensive E2E testing for the Pip
 │  ┌──────────────────────▼───────────────────────────┐   │
 │  │    APPLICATION UNDER TEST (AUT)                  │   │
 │  │    ┌────────────────────────────────────────┐    │   │
-│  │    │   PipeClose CRM - https://pipeclose.com│   │   │
+│  │    │   PipeClose CRM                        │    │   │
+│  │    │   https://staging.pipeclose.com        │    │   │
 │  │    └────────────────────────────────────────┘    │   │
 │  └──────────────────────────────────────────────────┘   │
 │                                                           │
@@ -708,7 +709,7 @@ test("Descriptive test name", async ({ page }) => {
 
 ```javascript
 try {
-  await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
+  await page.goto("https://staging.pipeclose.com/", { waitUntil: 'domcontentloaded' });
   await page.waitForLoadState('domcontentloaded');
 } catch (error) {
   throw new Error(`Failed to navigate to website: ${error.message}`);

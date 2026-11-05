@@ -2,7 +2,10 @@ const { test, expect } = require('@playwright/test');
 test("Deal Creation",async function ({page, context}) {
 
     // Launch the page
-    await page.goto("https://engineersarmy.com/")
+    await page.goto("https://staging.pipeclose.com/")
+
+    // Open the login form
+    await page.getByRole('link', { name: /^Log in/ }).first().click()
 
     // Enter email address
     await page.getByPlaceholder("Email").type ("ashishappnox1@gmail.com")

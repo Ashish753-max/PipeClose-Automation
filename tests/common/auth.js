@@ -11,8 +11,9 @@ const loginConfig = require('./loginConfig');
  * @param {import('@playwright/test').Page} page
  */
 async function login(page) {
-  await page.goto('https://pipeclose.com/', { waitUntil: 'domcontentloaded' });
-  await page.getByText('Log in').click();
+  await page.goto('https://staging.pipeclose.com/', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('link', { name: /^Log in/ }).first().click();
+  await page.getByPlaceholder('Email').waitFor({ timeout: 30000 });
   await page.waitForTimeout(1000);
   await page.getByPlaceholder('Email').fill(loginConfig.email);
   await page.waitForTimeout(500);

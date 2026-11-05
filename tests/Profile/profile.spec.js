@@ -2,9 +2,10 @@ const { test, expect } = require('@playwright/test');
 
 test("valid login", async ({ page }) => {
 
-  await page.goto("https://pipeclose.com/");
+  await page.goto("https://staging.pipeclose.com/");
 
-      await page.getByText('Sign in').click();
+      await page.getByRole('link', { name: /^Log in/ }).first().click();
+      await page.getByPlaceholder('Email').waitFor({ timeout: 30000 });
 
 
   await page.getByPlaceholder("Email")

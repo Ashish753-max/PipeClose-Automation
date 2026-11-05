@@ -1,88 +1,73 @@
+// AI Knowledge Base > Company Profile
+//   1. Open the section. If an earlier run saved a profile, clear it first
+//      (saving needs a change, and the dropdowns can only be picked while they read "Select ...")
+//   2. Fill in the name, industry, description, size and website
+//   3. Save: the server saves the profile and the section no longer "Needs attention"
+//   4. Reload: the profile is still there
+// Screenshots: screenshots/KnowledgeBase/CompanyProfile-*.png
 const { test, expect } = require('@playwright/test');
+const {
+  openKnowledgeBase, reloadKnowledgeBase, openSection, sectionHeader, pickOption, clearSection, saveSection,
+} = require('../common/knowledgeBase');
 
-test("valid login", async function ({ page }) {
+const PROFILE = {
+  name: 'Pipeclose',
+  industry: 'Technology / SaaS',
+  description: 'PipeClose is a CRM (Customer Relationship Management) platform that helps businesses manage their sales '
+    + 'pipeline, customer communication, and business relationships from one place. It enables sales teams to capture '
+    + 'leads, track deals, manage activities, and collaborate efficiently while reducing manual work through automation.',
+  size: '51 – 200 (Growing company)',
+  website: 'pipeclose.com',
+};
 
-    try {
-    // Navigate to application with error handling
-    try {
-      await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
-      await page.waitForLoadState('domcontentloaded');
-    } catch (error) {
-      throw new Error(`Failed to navigate to website: ${error.message}`);
-    }
-    await page.getByText('Sign in').click();
-    await page.waitForTimeout(1000);
+test('AI Knowledge Base - Company Profile', async ({ page }) => {
+  const main = page.getByRole('main');
+  const nameField = main.getByPlaceholder('e.g., Appnox Technologies');
+  const descriptionField = main.getByPlaceholder('e.g., Describe what your company does, who it serves, and the value it provides.');
+  const websiteField = main.getByPlaceholder('e.g., https://www.example.com');
+  const header = sectionHeader(page, 'Company Profile');
 
-    // Login with validation
-    try {
-      const emailField = page.getByPlaceholder("Email");
-      if (!await emailField.isVisible({ timeout: 5000 })) {
-        throw new Error("Email field not visible on login page");
-      }
-      await emailField.fill("ashishappnox1@gmail.com");
-      await page.waitForTimeout(500);
-
-      const passwordField = page.getByPlaceholder("Password");
-      if (!await passwordField.isVisible({ timeout: 5000 })) {
-        throw new Error("Password field not visible on login page");
-      }
-      await passwordField.fill("Ashish@567");
-      await page.waitForTimeout(500);
-
-      const submitButton = page.locator("//button[@type='submit']");
-      if (!await submitButton.isVisible()) {
-        throw new Error("Submit button not found");
-      }
-      await submitButton.click();
-
-    } catch (error) {
-      throw new Error(`Login failed: ${error.message}`);
-    }
-
-
-  } catch (error) {
-    console.error("Test error:", error.message);
-    throw error;
+  // Step 1: Open the section, and clear a profile saved by an earlier run
+  const knowledgeBase = await openKnowledgeBase(page);
+  await openSection(page, 'Company Profile');
+  await expect(nameField).toBeVisible();
+  if (knowledgeBase.category_1_company_profile.company_name) {
+    await clearSection(page, 'Company Profile');
+    await expect(nameField, 'The profile should be cleared').toHaveValue('');
+    await expect(header, 'A cleared profile needs attention').toContainText('Needs attention');
   }
 
-  // click on the AI knowledge base section 
-  await page.getByRole('link', { name: 'AI Knowledge Base' }).click();
-   await page.waitForTimeout(1000);
-  // click on the company profile section
-    await page.getByText('Company Profile').click();
+  // Step 2: Fill in the profile
+  await nameField.fill(PROFILE.name);
+  await pickOption(page, main.getByRole('button', { name: 'Select industry', exact: true }), PROFILE.industry);
+  await descriptionField.fill(PROFILE.description);
+  await pickOption(page, main.getByRole('button', { name: 'Select size', exact: true }), PROFILE.size);
+  // The website is only taken (and Save enabled) once Enter is pressed; it then gets the https:// prefix
+  await websiteField.fill(PROFILE.website);
+  await websiteField.press('Enter');
+  await expect(websiteField).toHaveValue(`https://${PROFILE.website}`);
+  await page.screenshot({ path: 'screenshots/KnowledgeBase/CompanyProfile-1-filled.png' });
 
-    // enter the company name 
-    await page.getByPlaceholder('e.g., Appnox Technologies').fill('Pipeclose');
+  // Step 3: Save
+  const saved = await saveSection(page, 'Company Profile');
+  expect(saved.category_1_company_profile).toMatchObject({
+    company_name: PROFILE.name,
+    industry: PROFILE.industry,
+    company_size: '51-200',
+    description: PROFILE.description,
+    website: `https://${PROFILE.website}/`,
+  });
+  await expect(header, 'The profile should no longer need attention').not.toContainText('Needs attention');
+  await page.screenshot({ path: 'screenshots/KnowledgeBase/CompanyProfile-2-saved.png' });
 
-    // click on the industry dropdown 
-        await page.getByText('Select industry').click();
-
-        // select technologies/saas
-        await page.getByText('Technology / SaaS').click();
-
-        // Enter the description 
-        await page.getByPlaceholder('e.g., Describe what your company does, who it serves, and the value it provides.').fill('PipeClose is a CRM (Customer Relationship Management) platform that helps businesses manage their sales pipeline, customer communication, and business relationships from one place. It enables sales teams to capture leads, track deals, manage activities, and collaborate efficiently while reducing manual work through automation.')
-
-        // click on the company size dropdown
-        await page.getByText('Select size').click();
-
-        // select the team size 
-        await page.getByText('51 – 200 (Growing company)').click();
-
-        // enter the website 
-        await page.getByPlaceholder('e.g., https://www.example.com').fill('pipeclose.com');
-
-        // press Enter key on keyboard
-        await page.keyboard.press('Enter');
-
-        // click on the save changes button
-        await page.getByRole('button', { name: 'Save Changes' }).click();
-await page.waitForTimeout(2000);
-        // click on the confirm save change button
-       const saveButton = page.getByRole('button', { name: 'Save changes' });
-
-await saveButton.click();
-        
-
+  // Step 4: Reload: the profile is still there
+  await reloadKnowledgeBase(page);
+  await openSection(page, 'Company Profile');
+  await expect(nameField).toHaveValue(PROFILE.name);
+  await expect(main.getByRole('button', { name: PROFILE.industry, exact: true })).toBeVisible();
+  await expect(descriptionField).toHaveValue(PROFILE.description);
+  await expect(main.getByRole('button', { name: PROFILE.size, exact: true })).toBeVisible();
+  await expect(websiteField).toHaveValue(`https://${PROFILE.website}/`);
+  await expect(header).not.toContainText('Needs attention');
+  await page.screenshot({ path: 'screenshots/KnowledgeBase/CompanyProfile-3-after-reload.png' });
 });
-

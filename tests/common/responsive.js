@@ -69,6 +69,47 @@ function findLayoutProblems(root) {
   };
 }
 
+// Runs in the page: empty boxes whose placeholder is wider than the room for it, so it shows cut short
+// (e.g. "Phone numbe"). Returns their placeholders.
+function findCutOffPlaceholders() {
+  const measure = document.createElement('canvas').getContext('2d');
+  return [...document.querySelectorAll('input[placeholder]')].filter(input => {
+    const rect = input.getBoundingClientRect();
+    const inputStyle = getComputedStyle(input);
+    if (rect.width < 2 || rect.height < 2 || input.value || inputStyle.visibility === 'hidden') return false;
+    const text = getComputedStyle(input, '::placeholder');
+    measure.font = `${text.fontStyle} ${text.fontWeight} ${text.fontSize} ${text.fontFamily}`;
+    const room = input.clientWidth - parseFloat(inputStyle.paddingLeft) - parseFloat(inputStyle.paddingRight);
+    return measure.measureText(input.placeholder).width > room + 1;
+  }).map(input => input.placeholder);
+}
+
+// Runs in the page: text cut off by the edge of its box with nothing to show it continues
+// (e.g. "Select company si"). Text cut with "..." on purpose is not listed.
+function findClippedText() {
+  const clipped = new Set();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node.textContent.trim();
+    if (!text) continue;
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const r = range.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) continue;
+    // The nearest box that hides what does not fit decides whether the text is cut
+    for (let box = node.parentElement; box && box !== document.body; box = box.parentElement) {
+      const style = getComputedStyle(box);
+      if (!/hidden|clip/.test(style.overflowX)) continue;
+      // Browsers draw the "..." only on block boxes: on a flex or grid box the text is cut without it
+      if (style.textOverflow === 'ellipsis' && !/flex|grid/.test(style.display)) break;
+      const edge = box.getBoundingClientRect().right - parseFloat(style.borderRightWidth);
+      if (r.right > edge + 1) clipped.add(text.slice(0, 40));
+      break;
+    }
+  }
+  return [...clipped];
+}
+
 // Text cut short with "..." (wider than its box)
 const isTruncated = locator => locator.evaluate(el => el.scrollWidth > el.clientWidth + 1);
 
@@ -111,4 +152,4 @@ const tapShare = locator => locator.evaluate(input => {
   return hits / total;
 });
 
-module.exports = { findLayoutProblems, isTruncated, visibleShare, tapShare };
+module.exports = { findLayoutProblems, findCutOffPlaceholders, findClippedText, isTruncated, visibleShare, tapShare };

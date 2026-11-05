@@ -5,7 +5,7 @@ test("valid login", async function ({ page }) {
     try {
     // Navigate to application with error handling
     try {
-      await page.goto("https://pipeclose.com/", { waitUntil: 'networkidle' });
+      await page.goto("https://staging.pipeclose.com/", { waitUntil: 'networkidle' });
       await page.waitForLoadState('networkidle');
     } catch (error) {
       throw new Error(`Failed to navigate to website: ${error.message}`);

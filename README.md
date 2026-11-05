@@ -272,7 +272,8 @@ This automation testing framework provides comprehensive E2E testing for the Pip
 │  ┌──────────────────────▼───────────────────────────┐   │
 │  │    APPLICATION UNDER TEST (AUT)                  │   │
 │  │    ┌────────────────────────────────────────┐    │   │
-│  │    │   PipeClose CRM - https://pipeclose.com│   │   │
+│  │    │   PipeClose CRM                        │    │   │
+│  │    │   https://staging.pipeclose.com        │    │   │
 │  │    └────────────────────────────────────────┘    │   │
 │  └──────────────────────────────────────────────────┘   │
 │                                                           │
@@ -310,7 +311,10 @@ C:/CRM/
 │   ├── 📁 Login/                            # Authentication & login tests
 │   │   ├── CrmLogin.spec.js
 │   │   ├── LoginPractice.spec.js
-│   │   └── TMLoginSuccessful.spec.js
+│   │   ├── TMLoginSuccessful.spec.js
+│   │   ├── LoginValidation.spec.js          # Log in: accepted, refused and edge cases
+│   │   ├── SignUpValidation.spec.js         # Sign up (2 steps): accepted, refused and edge cases
+│   │   └── LoginSignUpResponsive.spec.js    # Log in & Sign up on 6 screen sizes
 │   │
 │   ├── 📁 Lead/                             # Lead management tests
 │   │   ├── Lead1.spec.js
@@ -411,6 +415,11 @@ C:/CRM/
 - `CrmLogin.spec.js` - Main CRM login flow
 - `LoginPractice.spec.js` - Practice/training login scenario
 - `TMLoginSuccessful.spec.js` - Trusted Member successful login
+- `LoginValidation.spec.js` - Log in validation: what is accepted, what the browser stops, what the server refuses, page links and redirects
+- `SignUpValidation.spec.js` - Sign up validation for step 1 (your details), step 2 (company details) and Create Account. Never makes an account: see `VALID_ACCOUNT` in `tests/common/authPages.js`
+- `LoginSignUpResponsive.spec.js` - Log in and Sign up on phone, tablet and desktop sizes (screenshots in `screenshots/Auth-Responsive/`)
+
+Tests calling `knownDefect()` check a defect found on staging and pass while it is there. Run with `SHOW_DEFECTS=1` to see them fail with the details, and with `CREATE_TEST_ACCOUNT=1` to also run the one test that makes a real account.
 
 **Key Scenarios:**
 - Valid credentials login
@@ -870,7 +879,7 @@ test("Descriptive test name", async ({ page }) => {
 
 ```javascript
 try {
-  await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
+  await page.goto("https://staging.pipeclose.com/", { waitUntil: 'domcontentloaded' });
   await page.waitForLoadState('domcontentloaded');
 } catch (error) {
   throw new Error(`Failed to navigate to website: ${error.message}`);

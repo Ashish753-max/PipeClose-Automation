@@ -1,66 +1,32 @@
+// AI Knowledge Base > Products & Services
+//   1. Open the section and click "Add Product / Service": the form opens with Add disabled
+//   2. Type a name: Add is still disabled (it needs a description too)
+//   3. Type a description: Add is enabled
+// Nothing is added or saved. Screenshots: screenshots/KnowledgeBase/ProductsAndServices-*.png
 const { test, expect } = require('@playwright/test');
+const { openKnowledgeBase, openSection } = require('../common/knowledgeBase');
 
-test("valid login", async function ({ page }) {
+test('AI Knowledge Base - Products & Services', async ({ page }) => {
+  const main = page.getByRole('main');
+  const nameField = main.getByPlaceholder('Product / Service Name *');
+  const descriptionField = main.getByPlaceholder(/^Briefly describe what this product or service offers/);
+  const addButton = main.getByRole('button', { name: 'Add', exact: true });
 
-    try {
-    // Navigate to application with error handling
-    try {
-      await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
-      await page.waitForLoadState('domcontentloaded');
-    } catch (error) {
-      throw new Error(`Failed to navigate to website: ${error.message}`);
-    }
-    await page.getByText('Sign in').click();
-    await page.waitForTimeout(1000);
+  // Step 1: Open the section and the product form
+  await openKnowledgeBase(page);
+  await openSection(page, 'Products & Services');
+  await main.getByRole('button', { name: 'Add Product / Service', exact: true }).click();
+  await expect(nameField).toBeVisible();
+  await expect(descriptionField).toBeVisible();
+  await expect(addButton, 'Add needs a name and a description').toBeDisabled();
 
-    // Login with validation
-    try {
-      const emailField = page.getByPlaceholder("Email");
-      if (!await emailField.isVisible({ timeout: 5000 })) {
-        throw new Error("Email field not visible on login page");
-      }
-      await emailField.fill("ashishappnox1@gmail.com");
-      await page.waitForTimeout(500);
+  // Step 2: Type a name
+  await nameField.fill('Test Product');
+  await expect(nameField).toHaveValue('Test Product');
+  await expect(addButton, 'Add still needs a description').toBeDisabled();
 
-      const passwordField = page.getByPlaceholder("Password");
-      if (!await passwordField.isVisible({ timeout: 5000 })) {
-        throw new Error("Password field not visible on login page");
-      }
-      await passwordField.fill("Ashish@567");
-      await page.waitForTimeout(500);
-
-      const submitButton = page.locator("//button[@type='submit']");
-      if (!await submitButton.isVisible()) {
-        throw new Error("Submit button not found");
-      }
-      await submitButton.click();
-
-    } catch (error) {
-      throw new Error(`Login failed: ${error.message}`);
-    }
-
-
-  } catch (error) {
-    console.error("Test error:", error.message);
-    throw error;
-  }
-
-  // click on the AI knowledge base section 
-  await page.getByRole('link', { name: 'AI Knowledge Base' }).click();
-   await page.waitForTimeout(1000);
-  // click on the company profile section
-    await page.getByText('Products & Services').click();
-
-    // click on the add product and services button
-    await page.getByRole('button', { name: ' Add Product / Service' }).click();
-    await page.waitForTimeout(1000);
-
-    // Add product and services name 
-    await page.getByPlaceholder('Product / Service Name *').fill('Test Product');
-
-        
-
-        
-
+  // Step 3: Type a description
+  await descriptionField.fill('Test product description');
+  await expect(addButton, 'Add should be enabled').toBeEnabled();
+  await page.screenshot({ path: 'screenshots/KnowledgeBase/ProductsAndServices-1-form-filled.png' });
 });
-

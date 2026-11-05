@@ -10,11 +10,10 @@ test("Navigate to Campaign module", async function ({ page }) {
       throw new Error(`Failed to navigate to website: ${error.message}`);
     }
 
-    // Open login form if the landing page shows a Log in button
-    const loginButton = page.getByRole('button', { name: 'Log in', exact: true });
-    if (await loginButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await loginButton.click();
-    }
+    // Open the login page (the home page links to it as "Log in ↗") unless the form is already shown
+    const loginLink = page.getByRole('link', { name: /^Log in/ }).first();
+    await loginLink.or(page.getByPlaceholder("Email")).first().waitFor({ state: 'visible', timeout: 15000 });
+    if (await loginLink.isVisible()) await loginLink.click();
 
     await page.waitForTimeout(1000);
 

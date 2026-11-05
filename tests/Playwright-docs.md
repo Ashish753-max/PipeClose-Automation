@@ -125,7 +125,7 @@ npx playwright install
 
 ```bash
 # Create default Playwright config
-npx playwright codegen https://pipeclose.com/
+npx playwright codegen https://staging.pipeclose.com/
 ```
 
 ### Your Project Structure After Setup
@@ -166,14 +166,14 @@ CRM/
 │  │                                           │   │
 │  │  ┌────────────────────────────────────┐  │   │
 │  │  │ PAGE #1                            │  │   │
-│  │  │ (https://pipeclose.com/)           │  │   │
+│  │  │ (staging.pipeclose.com/)           │  │   │
 │  │  │ - DOM elements                     │  │   │
 │  │  │ - JavaScript context               │  │   │
 │  │  └────────────────────────────────────┘  │   │
 │  │                                           │   │
 │  │  ┌────────────────────────────────────┐  │   │
 │  │  │ PAGE #2                            │  │   │
-│  │  │ (https://pipeclose.com/leads/)     │  │   │
+│  │  │ (staging.pipeclose.com/leads/)     │  │   │
 │  │  └────────────────────────────────────┘  │   │
 │  └──────────────────────────────────────────┘   │
 │                                                  │
@@ -212,7 +212,7 @@ const page = await context.newPage();
 - This is what you interact with in tests
 
 ```javascript
-await page.goto('https://pipeclose.com/');
+await page.goto('https://staging.pipeclose.com/');
 await page.click('button');
 const title = await page.title();
 ```
@@ -232,7 +232,7 @@ const { test, expect } = require('@playwright/test');
 
 test('My first test', async ({ page }) => {
   // page is automatically provided and isolated
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
 });
 ```
 
@@ -244,10 +244,10 @@ test('My first test', async ({ page }) => {
 
 ```javascript
 // Navigate to URL
-await page.goto('https://pipeclose.com/');
+await page.goto('https://staging.pipeclose.com/');
 
 // Navigate with options
-await page.goto('https://pipeclose.com/', {
+await page.goto('https://staging.pipeclose.com/', {
   waitUntil: 'domcontentloaded',  // Wait for DOM ready
   // OR 'networkidle', 'load', 'networkidle2'
 });
@@ -498,7 +498,7 @@ const cookies = await page.context().cookies();
 
 // Add cookie
 await page.context().addCookies([
-  { name: 'token', value: 'abc123', url: 'https://pipeclose.com' }
+  { name: 'token', value: 'abc123', url: 'https://staging.pipeclose.com' }
 ]);
 
 // Clear cookies
@@ -762,7 +762,7 @@ await page.waitForTimeout(1000);  // Always waits full 1 second
 
 ```javascript
 // Wait for navigation completion
-await page.goto('https://pipeclose.com/');
+await page.goto('https://staging.pipeclose.com/');
 await page.waitForLoadState('domcontentloaded');
 
 // Wait for specific element to appear
@@ -817,7 +817,7 @@ await page.waitForLoadState('networkidle');
 
 ```javascript
 // Pattern 1: After Navigation
-await page.goto('https://pipeclose.com/');
+await page.goto('https://staging.pipeclose.com/');
 await page.waitForLoadState('domcontentloaded');  // ✅ GOOD
 
 // Pattern 2: After Click (Wait for element)
@@ -853,8 +853,8 @@ const { test, expect } = require('@playwright/test');
 
 test('Assertions Example', async ({ page }) => {
   // Navigation assertion
-  await page.goto('https://pipeclose.com/');
-  expect(page.url()).toContain('pipeclose.com');
+  await page.goto('https://staging.pipeclose.com/');
+  expect(page.url()).toContain('staging.pipeclose.com');
 
   // Text assertions
   const title = page.locator('h1');
@@ -991,7 +991,7 @@ test('Error handling example', async ({ page }) => {
   try {
     // Step 1: Navigate
     try {
-      await page.goto("https://pipeclose.com/", { 
+      await page.goto("https://staging.pipeclose.com/", { 
         waitUntil: 'domcontentloaded' 
       });
     } catch (error) {
@@ -1026,7 +1026,7 @@ test('Error handling example', async ({ page }) => {
 ```javascript
 // ✅ GOOD: Reusable function
 async function loginUser(page, email, password) {
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
   await page.waitForTimeout(1000);
   await page.getByPlaceholder('Email').fill(email);
@@ -1199,7 +1199,7 @@ await emailField.fill("test@example.com");
 ```javascript
 // ❌ INCOMPLETE - No verification
 test("valid login", async ({ page }) => {
-  await page.goto("https://pipeclose.com/");
+  await page.goto("https://staging.pipeclose.com/");
   await page.getByText('Log in').click();
   await page.fill("input", "email");
   // ... but no assert what happened!
@@ -1207,7 +1207,7 @@ test("valid login", async ({ page }) => {
 
 // ✅ COMPLETE - With assertions
 test("valid login", async ({ page }) => {
-  await page.goto("https://pipeclose.com/");
+  await page.goto("https://staging.pipeclose.com/");
   await page.getByText('Log in').click();
   await page.fill("input", "email");
   
@@ -1274,7 +1274,7 @@ class LoginPage {
   }
 
   async goto() {
-    await this.page.goto('https://pipeclose.com/');
+    await this.page.goto('https://staging.pipeclose.com/');
   }
 
   async fillEmail(email) {
@@ -1375,11 +1375,11 @@ throw new Error(
 
 ```javascript
 // ❌ RISKY - Assume page is ready
-await page.goto('https://pipeclose.com/');
+await page.goto('https://staging.pipeclose.com/');
 await page.click('button');  // Page might not be loaded!
 
 // ✅ SAFE - Validate first
-await page.goto('https://pipeclose.com/', { 
+await page.goto('https://staging.pipeclose.com/', { 
   waitUntil: 'domcontentloaded' 
 });
 await page.getByText('Log in').waitFor({ state: 'visible' });
@@ -1518,7 +1518,7 @@ class LoginPage {
   }
 
   async goto() {
-    await this.page.goto('https://pipeclose.com/', { 
+    await this.page.goto('https://staging.pipeclose.com/', { 
       waitUntil: 'domcontentloaded' 
     });
   }
@@ -1784,7 +1784,7 @@ test("[Login] should successfully authenticate when valid credentials provided",
 ```env
 TEST_EMAIL=ashishappnox1@gmail.com
 TEST_PASSWORD=Ashish@567
-TEST_URL=https://pipeclose.com/
+TEST_URL=https://staging.pipeclose.com/
 TEST_TIMEOUT=30000
 ```
 
@@ -1819,7 +1819,7 @@ test('Test with mocked API', async ({ page }) => {
     route.abort('blockedbyclient');
   });
   
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
 });
 ```
 
@@ -1834,7 +1834,7 @@ test('Test on slow network', async ({ page, context }) => {
     setTimeout(() => route.continue(), 100);
   });
   
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
 });
 ```
 
@@ -1858,7 +1858,7 @@ test('Test with trace', async ({ page }) => {
   await page.context().tracing.start({ screenshots: true });
   
   // Test code
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.click('button');
   
   // Save trace
@@ -1962,7 +1962,7 @@ const { test, expect } = require('@playwright/test');
 test("valid login", async ({ page }) => {
   try {
     // Issue 1: Hard wait instead of smart wait
-    await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
+    await page.goto("https://staging.pipeclose.com/", { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
   } catch (error) {
     throw new Error(`Failed to navigate to website: ${error.message}`);
@@ -2036,7 +2036,7 @@ const { test, expect } = require('@playwright/test');
 
 test("Deal Creation", async function ({page, context}) {
   // Issue 1: No error handling for navigation
-  await page.goto("https://pipeclose.com/");
+  await page.goto("https://staging.pipeclose.com/");
   
   // Issue 2: Hard waits
   await page.getByText('Log in').click();

@@ -2,7 +2,9 @@ const { test, expect } = require('@playwright/test');
 
 test("valid login", async ({ page }) => {
 
-  await page.goto("https://engineersarmy.com/");
+  await page.goto("https://staging.pipeclose.com/");
+
+  await page.getByRole('link', { name: /^Log in/ }).first().click();
 
   await page.getByPlaceholder("Email")
             .fill("ashishappnox1@gmail.com");

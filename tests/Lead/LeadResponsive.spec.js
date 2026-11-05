@@ -29,8 +29,8 @@ for (const vp of viewports) {
     // Dismiss cookie consent if shown
     await page.getByRole('button', { name: 'Accept', exact: true }).click({ timeout: 8000 }).catch(() => {});
 
-    // On small screens Log in is inside the hamburger menu
-    const loginBtn = page.getByRole('button', { name: 'Log in', exact: true });
+    // The header shows "Log in ↗" on every screen size; open the hamburger menu only if it is hidden
+    const loginBtn = page.getByRole('link', { name: /^Log in/ }).first();
     const menuBtn = page.getByRole('button', { name: 'Open menu' });
     await loginBtn.or(menuBtn).first().waitFor({ state: 'visible', timeout: 15000 });
     await shot('01-landing');
@@ -40,7 +40,7 @@ for (const vp of viewports) {
       await page.waitForTimeout(1000);
       await shot('02-menu-open');
     }
-    await loginBtn.or(page.getByRole('link', { name: 'Log in' })).first().click();
+    await loginBtn.click();
 
     // Login
     const emailField = page.getByPlaceholder("Email");

@@ -114,7 +114,7 @@ email = "jane@example.com";       // Can reassign
 // ============================================
 // CONST (✅ RECOMMENDED FOR CONSTANTS)
 // ============================================
-const API_URL = "https://pipeclose.com";  // Block-scoped
+const API_URL = "https://staging.pipeclose.com";  // Block-scoped
 const MAX_RETRIES = 3;
 // const API_URL = "new-url";  // ❌ Can't reassign
 
@@ -587,7 +587,7 @@ console.log(createUser("John", 25));  // { name: "John", age: 25 }
 ```javascript
 // ✅ GOOD - Reusable login function
 async function login(page, email, password) {
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
   await page.getByPlaceholder('Email').fill(email);
   await page.getByPlaceholder('Password').fill(password);
@@ -1185,7 +1185,7 @@ async function fetchConcurrent() {
 // ============================================
 test('Login test', async ({ page }) => {
   // This is an async function automatically
-  await page.goto('https://pipeclose.com/');      // Wait for navigation
+  await page.goto('https://staging.pipeclose.com/');      // Wait for navigation
   await page.getByText('Log in').click();          // Wait for click
   await page.getByPlaceholder('Email').fill('test@example.com');  // Wait
   await page.getByPlaceholder('Password').fill('password');       // Wait
@@ -1333,7 +1333,7 @@ test('Login with error handling', async ({ page }) => {
   try {
     // Navigation
     try {
-      await page.goto("https://pipeclose.com/", { 
+      await page.goto("https://staging.pipeclose.com/", { 
         waitUntil: 'domcontentloaded' 
       });
     } catch (error) {
@@ -1390,7 +1390,7 @@ module.exports = {
 
 // Export variables/constants
 module.exports = {
-  API_URL: 'https://pipeclose.com',
+  API_URL: 'https://staging.pipeclose.com',
   MAX_RETRIES: 3,
   TIMEOUT: 30000
 };
@@ -1836,7 +1836,7 @@ class LoginPage {
 
   // Methods for actions
   async goto() {
-    await this.page.goto('https://pipeclose.com/');
+    await this.page.goto('https://staging.pipeclose.com/');
   }
 
   async clickLogin() {
@@ -1955,7 +1955,7 @@ await page.getByPlaceholder("Password").fill(password);
 ```javascript
 // ❌ DUPLICATE LOGIC ACROSS TESTS
 test('Test 1', async ({ page }) => {
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
   await page.getByPlaceholder("Email").fill("email");
   await page.getByPlaceholder("Password").fill("password");
@@ -1963,14 +1963,14 @@ test('Test 1', async ({ page }) => {
 });
 
 test('Test 2', async ({ page }) => {
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
   // ... same as above
 });
 
 // ✅ SHOULD EXTRACT TO FUNCTION
 async function login(page, email, password) {
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
   await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Password").fill(password);
@@ -2025,13 +2025,13 @@ if (0 === false) {   // false
 ```javascript
 // ❌ WRONG - Forgot await
 test('Login', async ({ page }) => {
-  page.goto('https://pipeclose.com/');  // Returns promise, not awaited!
+  page.goto('https://staging.pipeclose.com/');  // Returns promise, not awaited!
   page.getByText('Log in').click();      // Runs before navigation completes
 });
 
 // ✅ CORRECT - Use await
 test('Login', async ({ page }) => {
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
 });
 ```
@@ -2184,11 +2184,11 @@ const data = {a: 1, b: 2};        // Single letter keys
 // ============================================
 // ❌ BAD
 const d = 30000;
-const c = 'https://pipeclose.com/';
+const c = 'https://staging.pipeclose.com/';
 
 // ✅ GOOD
 const DEFAULT_TIMEOUT = 30000;
-const BASE_URL = 'https://pipeclose.com/';
+const BASE_URL = 'https://staging.pipeclose.com/';
 ```
 
 ### Code Organization
@@ -2222,13 +2222,13 @@ await createLead(page, leadName);
 // ============================================
 // ❌ BAD - Repeated code
 test('Create Lead', async ({ page }) => {
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
   // ... login steps
 });
 
 test('Create Deal', async ({ page }) => {
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
   // ... login steps (REPEATED)
 });
@@ -2347,7 +2347,7 @@ const { test, expect } = require('@playwright/test');
 
 test("valid login", async ({ page }) => {
   try {
-    await page.goto("https://pipeclose.com/", { waitUntil: 'domcontentloaded' });
+    await page.goto("https://staging.pipeclose.com/", { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
   } catch (error) {
     throw new Error(`Failed to navigate to website: ${error.message}`);
@@ -2391,7 +2391,7 @@ const { test, expect } = require('@playwright/test');
 const loginConfig = require('../common/loginConfig');
 
 async function login(page, email = loginConfig.email, password = loginConfig.password) {
-  await page.goto('https://pipeclose.com/', { waitUntil: 'domcontentloaded' });
+  await page.goto('https://staging.pipeclose.com/', { waitUntil: 'domcontentloaded' });
   await page.getByText('Log in').click();
   
   const emailField = page.getByPlaceholder('Email');
@@ -2421,7 +2421,7 @@ test("[Login] should successfully authenticate user", async ({ page }) => {
 ```javascript
 // ❌ CURRENT - Multiple Issues
 test("Deal Creation", async function ({page, context}) {
-  await page.goto("https://pipeclose.com/");
+  await page.goto("https://staging.pipeclose.com/");
   await page.getByText('Log in').click();
   await page.waitForTimeout(1000);
 
@@ -2486,7 +2486,7 @@ test("[Deal] should create deal with valid information", async ({ page }) => {
   const dealPage = new DealPage(page);
   
   // Login
-  await page.goto('https://pipeclose.com/');
+  await page.goto('https://staging.pipeclose.com/');
   await page.getByText('Log in').click();
   await page.getByPlaceholder('Email').fill(loginConfig.email);
   await page.getByPlaceholder('Password').fill(loginConfig.password);
