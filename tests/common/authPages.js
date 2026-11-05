@@ -85,15 +85,27 @@ function browserCheck(field) {
   }));
 }
 
-// Runs the action and checks nothing was sent to the server path, e.g. '/api/auth/login'
-async function expectNothingSent(page, apiPath, action) {
+// Starts noting requests to the server path, e.g. '/api/auth/login'. After the action, call expectNone():
+// it gives a request time to start, then checks none was sent.
+// Check message boxes before expectNone(): they close by themselves after about 2 s.
+function watchRequests(page, apiPath) {
   const sent = [];
   const watch = request => { if (request.url().includes(apiPath)) sent.push(request.url()); };
   page.on('request', watch);
+  return {
+    async expectNone() {
+      await page.waitForTimeout(1500);
+      page.off('request', watch);
+      expect(sent, `Nothing should be sent to ${apiPath}`).toEqual([]);
+    },
+  };
+}
+
+// Runs the action and checks nothing was sent to the server path
+async function expectNothingSent(page, apiPath, action) {
+  const requests = watchRequests(page, apiPath);
   await action();
-  await page.waitForTimeout(1500); // time for a request to start, if one was going to
-  page.off('request', watch);
-  expect(sent, `Nothing should be sent to ${apiPath}`).toEqual([]);
+  await requests.expectNone();
 }
 
 // The button that shows or hides the password: the only button in the password box
@@ -222,7 +234,7 @@ async function submitSignUp(page) {
 
 module.exports = {
   BASE_URL, UNREGISTERED_EMAIL, VALID_ACCOUNT, VALID_COMPANY, INDUSTRIES, COMPANY_SIZES,
-  openLogin, openSignUp, knownDefect, toast, browserCheck, expectNothingSent, showPasswordButton,
+  openLogin, openSignUp, knownDefect, toast, browserCheck, watchRequests, expectNothingSent, showPasswordButton,
   loginForm, submitLogin,
   signUpForm, fillAccount, clickNext, expectStep1, expectStep2, goToStep2,
   chooseFromDropdown, pickLocation, fillCompany, submitSignUp,

@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const loginConfig = require('../common/loginConfig');
 const {
-  VALID_ACCOUNT, INDUSTRIES, COMPANY_SIZES, openSignUp, knownDefect, toast, expectNothingSent, showPasswordButton,
+  VALID_ACCOUNT, INDUSTRIES, COMPANY_SIZES, openSignUp, knownDefect, toast, watchRequests, expectNothingSent, showPasswordButton,
   signUpForm, fillAccount, clickNext, expectStep1, expectStep2, goToStep2, chooseFromDropdown, pickLocation,
   fillCompany, submitSignUp,
 } = require('../common/authPages');
@@ -22,18 +22,22 @@ test.beforeEach(async ({ page }) => {
   await openSignUp(page);
 });
 
-// Next is clicked, step 1 stays and the message box shows this title and text
+// Next is clicked, the message box shows this title and text, step 1 stays and nothing is sent
 async function expectStep1Error(page, title, message) {
-  await expectNothingSent(page, '/api/auth/register', () => clickNext(page));
+  const requests = watchRequests(page, '/api/auth/register');
+  await clickNext(page);
   await expect(toast(page, title), `"${title}" should show`).toContainText(message);
   await expectStep1(page);
+  await requests.expectNone();
 }
 
-// Create Account is clicked, nothing is sent and the message box shows this title and text
+// Create Account is clicked, the message box shows this title and text, step 2 stays and nothing is sent
 async function expectStep2Error(page, title, message) {
-  await expectNothingSent(page, '/api/auth/register', () => signUpForm(page).createAccount.click());
+  const requests = watchRequests(page, '/api/auth/register');
+  await signUpForm(page).createAccount.click();
   await expect(toast(page, title), `"${title}" should show`).toContainText(message);
   await expect(signUpForm(page).companyName, 'Step 2 should stay open').toBeVisible();
+  await requests.expectNone();
 }
 
 // The server refused the sign up with this status and the "Registration Error" message shows this text
@@ -119,9 +123,11 @@ test.describe('Sign up step 1 - accepted', () => {
 
 test.describe('Sign up step 1 - stopped (nothing is sent)', () => {
   test('all boxes empty', async ({ page }) => {
-    await expectNothingSent(page, '/api/auth/register', () => clickNext(page));
+    const requests = watchRequests(page, '/api/auth/register');
+    await clickNext(page);
     await expect(page.getByRole('heading', { level: 3 }).first(), 'An error message should show').toBeVisible();
     await expectStep1(page);
+    await requests.expectNone();
   });
 
   const badPasswords = [
