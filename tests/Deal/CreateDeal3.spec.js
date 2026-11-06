@@ -8,6 +8,6 @@ test("Deal Creation - Vijay", async ({ page }) => {
     value: '4000',
     phone: '9878473848',
     email: 'vijay.appnox@gmail.com',
-    screenshot: 'CreateDeal3-end.png',
+    screenshot: 'Deal/CreateDeal3-end.png',
   });
 });

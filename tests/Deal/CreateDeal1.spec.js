@@ -8,6 +8,6 @@ test("Deal Creation - Ashish Rai", async ({ page }) => {
     value: '4000',
     phone: '9878473848',
     email: 'ashishappnox1@gmail.com',
-    screenshot: 'CreateDeal1-end.png',
+    screenshot: 'Deal/CreateDeal1-end.png',
   });
 });

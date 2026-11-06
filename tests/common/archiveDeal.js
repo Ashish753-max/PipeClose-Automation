@@ -107,7 +107,7 @@ async function openArchived(page) {
  * Permanently deletes an archived deal from the Archived view and verifies it is gone.
  * @param {import('@playwright/test').Page} page
  * @param {{ id: number, title: string }} deal
- * @param {string} screenshot file name prefix in screenshots/
+ * @param {string} screenshot file path prefix inside screenshots/, with its folder, e.g. 'Deal/ArchiveDeleteDeal1'
  */
 async function deleteArchivedDeal(page, deal, screenshot) {
   const archived = await openArchived(page);

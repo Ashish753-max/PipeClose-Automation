@@ -121,7 +121,7 @@ await expect.poll(() => leadRows.count(), { timeout: 30000 }).toBeGreaterThan(co
 console.log(`Lead "${leadName}" created (${countBefore} -> ${await leadRows.count()} in Leads list).`);
 
 // Take screenshot to see the result after lead creation
-await page.screenshot({ path: 'screenshots/Lead2-Created-Successfully.png' });
+await page.screenshot({ path: 'screenshots/Lead/Lead2-Created-Successfully.png' });
 console.log('✓ Screenshot saved: screenshots/Lead2-Created-Successfully.png');
 
 });

@@ -42,7 +42,7 @@ test("Archive a lead from the Action menu", async ({ page }) => {
   // Success message, row leaves the list and the counter goes down by one
   await expect.soft(page.getByRole('heading', { name: 'Lead archived', exact: true }),
     'Success message "Lead archived" should be shown').toBeVisible({ timeout: 5000 });
-  await page.screenshot({ path: 'screenshots/LeadArchive-archived.png' });
+  await page.screenshot({ path: 'screenshots/Lead/LeadArchive-archived.png' });
   await expect(leadRow(page, lead.person), 'Archived lead should leave the list').toHaveCount(0);
   await expect.poll(() => leadCount(page), { message: `Lead count should go from ${countBefore} to ${countBefore - 1}` })
     .toBe(countBefore - 1);
@@ -54,7 +54,7 @@ test("Archive a lead from the Action menu", async ({ page }) => {
   await page.getByRole('button', { name: 'Archived', exact: true }).click();
   await expect(page.getByRole('cell', { name: lead.person, exact: true }), 'Lead should be listed under Archived')
     .toBeVisible({ timeout: 30000 });
-  await page.screenshot({ path: 'screenshots/LeadArchive-in-archived.png' });
+  await page.screenshot({ path: 'screenshots/Lead/LeadArchive-in-archived.png' });
 });
 
 test("Delete a lead from the Action menu", async ({ page }) => {
@@ -80,7 +80,7 @@ test("Delete a lead from the Action menu", async ({ page }) => {
   await openActionMenu(page, lead.person);
   await page.getByRole('button', { name: 'Delete Lead', exact: true }).click();
   await expect(dialog).toContainText(`Delete "${lead.title}"?`);
-  await page.screenshot({ path: 'screenshots/LeadDelete-confirm.png' });
+  await page.screenshot({ path: 'screenshots/Lead/LeadDelete-confirm.png' });
   const [response] = await Promise.all([
     page.waitForResponse(r => r.url().endsWith(`/api/leads/delete/${lead.id}`) && r.request().method() === 'DELETE'),
     dialog.getByRole('button', { name: 'Delete', exact: true }).click(),
@@ -90,7 +90,7 @@ test("Delete a lead from the Action menu", async ({ page }) => {
   // Success message, row leaves the list and the counter goes down by one
   await expect.soft(page.getByRole('heading', { name: 'Lead deleted', exact: true }),
     'Success message "Lead deleted" should be shown').toBeVisible({ timeout: 5000 });
-  await page.screenshot({ path: 'screenshots/LeadDelete-deleted.png' });
+  await page.screenshot({ path: 'screenshots/Lead/LeadDelete-deleted.png' });
   await expect(dialog).toBeHidden();
   await expect(leadRow(page, lead.person), 'Deleted lead should leave the list').toHaveCount(0);
   await expect.poll(() => leadCount(page), { message: `Lead count should go from ${countBefore} to ${countBefore - 1}` })

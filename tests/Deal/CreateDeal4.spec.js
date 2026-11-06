@@ -8,6 +8,6 @@ test("Deal Creation - Dev", async ({ page }) => {
     value: '4000',
     phone: '367347474721',
     email: 'dev.appnox@gmail.com',
-    screenshot: 'CreateDeal4-end.png',
+    screenshot: 'Deal/CreateDeal4-end.png',
   });
 });

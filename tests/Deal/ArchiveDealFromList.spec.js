@@ -21,7 +21,7 @@ test("Archive a deal from the Action menu in List View", async ({ page }) => {
   const created = page.waitForResponse(r => r.url().includes('/api/deals/create') && r.request().method() === 'POST');
   await addDeal(page, {
     person: `DealArchive${stamp}`, organization: `DealOrg${stamp}`, value: '1500',
-    phone: '9876543210', email: 'deal.archive@gmail.com', screenshot: 'ArchiveDealFromList-created.png',
+    phone: '9876543210', email: 'deal.archive@gmail.com', screenshot: 'Deal/ArchiveDealFromList-created.png',
   }, { checkSuccessMessage: false });
   const { deal } = (await (await created).json()).data;
 
@@ -44,7 +44,7 @@ test("Archive a deal from the Action menu in List View", async ({ page }) => {
   // Success message, row leaves the list and the counter goes down by one
   await expect.soft(page.getByRole('heading', { name: 'Deal archived', exact: true }),
     'Success message "Deal archived" should be shown').toBeVisible({ timeout: 5000 });
-  await page.screenshot({ path: 'screenshots/ArchiveDealFromList-archived.png' });
+  await page.screenshot({ path: 'screenshots/Deal/ArchiveDealFromList-archived.png' });
   await expect(row, 'Archived deal should leave the list').toHaveCount(0);
   await expect.soft.poll(() => dealCount(page), { message: `Deal count should go from ${countBefore} to ${countBefore - 1}` })
     .toBe(countBefore - 1);
@@ -57,5 +57,5 @@ test("Archive a deal from the Action menu in List View", async ({ page }) => {
   await expect(archivedRow, 'Deal should be listed in the Archived section').toHaveCount(1, { timeout: 30000 });
   await expect(archivedRow).toContainText('$1,500');
   await expect(archivedRow.getByRole('button', { name: /Unarchive/ })).toBeVisible();
-  await page.screenshot({ path: 'screenshots/ArchiveDealFromList-in-archived.png' });
+  await page.screenshot({ path: 'screenshots/Deal/ArchiveDealFromList-in-archived.png' });
 });

@@ -10,11 +10,11 @@ test("Archive and delete deal - Shivam", async ({ page }) => {
     value: '4000',
     phone: '9878473848',
     email: 'shivam.appnox@gmail.com',
-    screenshot: 'ArchiveDeleteDeal2-created.png',
+    screenshot: 'Deal/ArchiveDeleteDeal2-created.png',
   });
 
   for (const deal of deals) {
     if (!deal.archived) await archiveDeal(page, deal);
-    await deleteArchivedDeal(page, deal, 'ArchiveDeleteDeal2');
+    await deleteArchivedDeal(page, deal, 'Deal/ArchiveDeleteDeal2');
   }
 });

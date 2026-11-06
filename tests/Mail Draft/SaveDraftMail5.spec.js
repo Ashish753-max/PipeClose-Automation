@@ -155,7 +155,7 @@ test("valid login", async ({ page }) => {
       await saveDraftButton.click();
       await expect(page.getByText('Draft Saved').first()).toBeVisible({ timeout: 15000 });
       console.log('Draft Saved toast shown.');
-      await page.screenshot({ path: 'screenshots/SaveDraftMail5-after-save.png' });
+      await page.screenshot({ path: 'screenshots/MailDraft/SaveDraftMail5-after-save.png' });
     } catch (error) {
       throw new Error(`Failed to click Save Draft: ${error.message}`);
     }
@@ -172,7 +172,7 @@ test("valid login", async ({ page }) => {
       await page.getByText(/^Drafts$/).first().click();
       await expect(page).toHaveURL(/folder=drafts?/i);
       await page.waitForTimeout(5000);
-      await page.screenshot({ path: 'screenshots/SaveDraftMail5-drafts.png' });
+      await page.screenshot({ path: 'screenshots/MailDraft/SaveDraftMail5-drafts.png' });
 
       // The newest draft must be for this recipient and subject
       const draftRow = page.locator('div').filter({ hasText: recipient }).filter({ hasText: subject }).last();
@@ -193,14 +193,14 @@ test("valid login", async ({ page }) => {
       await expect(subjectField).toHaveValue(subject);
       await expect(page.locator('[contenteditable="true"]').first()).toContainText('CRM should allow users to enter a recipient email address');
       console.log(`Draft opened: from ${sender} to ${recipient}, subject "${subject}".`);
-      await page.screenshot({ path: 'screenshots/SaveDraftMail5-draft-opened.png' });
+      await page.screenshot({ path: 'screenshots/MailDraft/SaveDraftMail5-draft-opened.png' });
     } catch (error) {
-      await page.screenshot({ path: 'screenshots/SaveDraftMail5-draft-verify-failed.png' });
+      await page.screenshot({ path: 'screenshots/MailDraft/SaveDraftMail5-draft-verify-failed.png' });
       throw new Error(`Draft verification failed: ${error.message}`);
     }
 
     // Take final screenshot
-    await page.screenshot({ path: 'screenshots/SaveDraftMail5-end.png' });
+    await page.screenshot({ path: 'screenshots/MailDraft/SaveDraftMail5-end.png' });
 
   } catch (error) {
     console.error("Test error:", error.message);

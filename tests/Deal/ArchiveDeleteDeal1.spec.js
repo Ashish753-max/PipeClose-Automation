@@ -10,11 +10,11 @@ test("Archive and delete deal - Ashish Rai", async ({ page }) => {
     value: '4000',
     phone: '9878473848',
     email: 'ashishappnox1@gmail.com',
-    screenshot: 'ArchiveDeleteDeal1-created.png',
+    screenshot: 'Deal/ArchiveDeleteDeal1-created.png',
   });
 
   for (const deal of deals) {
     if (!deal.archived) await archiveDeal(page, deal);
-    await deleteArchivedDeal(page, deal, 'ArchiveDeleteDeal1');
+    await deleteArchivedDeal(page, deal, 'Deal/ArchiveDeleteDeal1');
   }
 });

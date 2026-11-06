@@ -8,6 +8,6 @@ test("Deal Creation - Shivam", async ({ page }) => {
     value: '4000',
     phone: '9878473848',
     email: 'shivam.appnox@gmail.com',
-    screenshot: 'CreateDeal2-end.png',
+    screenshot: 'Deal/CreateDeal2-end.png',
   });
 });

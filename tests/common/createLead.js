@@ -1,5 +1,5 @@
 // tests/common/createLead.js
-// Shared lead setup for the Lead scripts (tests/Lead Details/*.spec.js, tests/Lead/ArchiveDeleteLead.spec.js)
+// Shared lead setup for the Lead scripts (tests/Lead Details/*.spec.js, tests/Lead/ArchiveDeleteLead.spec.js, tests/Lead/LeadSearch.spec.js)
 const { expect } = require('@playwright/test');
 const { loginStaging } = require('./createDeal');
 
@@ -25,7 +25,7 @@ async function openLeads(page) {
  * Adds a lead with a unique name from the Leads list and waits for its row.
  * @param {import('@playwright/test').Page} page
  * @param {string} prefix person name prefix, e.g. "LeadDetail" gives "LeadDetail123456"
- * @returns {Promise<{ id: number, person: string, organization: string, title: string }>}
+ * @returns {Promise<{ id: number, person: string, organization: string, title: string, email: string }>}
  */
 async function addLead(page, prefix) {
   const stamp = Date.now().toString().slice(-6);
@@ -42,7 +42,8 @@ async function addLead(page, prefix) {
   await page.getByRole('spinbutton', { name: 'Value' }).fill('2500');
   await page.getByPlaceholder('Phone number').fill('9876543210');
   // Unique per run so it never clashes with an existing deal's email
-  await page.getByPlaceholder('Email address').fill(`lead.details+${Date.now()}@gmail.com`);
+  const email = `lead.details+${Date.now()}@gmail.com`;
+  await page.getByPlaceholder('Email address').fill(email);
 
   const [response] = await Promise.all([
     page.waitForResponse(r => r.url().includes('/api/leads/create') && r.request().method() === 'POST'),
@@ -54,7 +55,7 @@ async function addLead(page, prefix) {
   // .first(): the list briefly showed a new lead twice once while other leads were being created
   await expect(page.getByRole('cell', { name: person, exact: true }).first(), 'New lead should be listed').toBeVisible();
   console.log(`Created lead ${lead.id} "${lead.title}"`);
-  return { id: lead.id, person, organization, title: lead.title };
+  return { id: lead.id, person, organization, title: lead.title, email };
 }
 
 module.exports = { openLeads, addLead, leadCount };

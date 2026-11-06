@@ -8,6 +8,6 @@ test("Deal Creation - Kunal", async ({ page }) => {
     value: '4000',
     phone: '34738284738',
     email: 'kunal.appnox@gmail.com',
-    screenshot: 'CreateDeal5-end.png',
+    screenshot: 'Deal/CreateDeal5-end.png',
   });
 });

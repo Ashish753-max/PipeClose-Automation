@@ -84,7 +84,7 @@ test('Lead - create with every field and verify list columns and details', async
   await page.getByPlaceholder('Email address').fill(lead.email);
   const emailType = page.getByPlaceholder('Email address').locator('xpath=following::button[@role="combobox"][1]');
   await expect(emailType).toContainText(lead.emailType);
-  await page.screenshot({ path: 'screenshots/LeadAllFields-1-form.png', fullPage: true });
+  await page.screenshot({ path: 'screenshots/Lead/LeadAllFields-1-form.png', fullPage: true });
 
   // Save and check what was sent
   const [response] = await Promise.all([
@@ -117,7 +117,7 @@ test('Lead - create with every field and verify list columns and details', async
   expect.soft(column('LOCATION'), 'Location column').toBe(lead.country);
   expect.soft(column('JOB TITLE'), 'Job title column (not in the Add lead form)').toBe('—');
   expect.soft(column('LINKEDIN'), 'LinkedIn column (not in the Add lead form)').toBe('—');
-  await page.screenshot({ path: 'screenshots/LeadAllFields-2-list.png' });
+  await page.screenshot({ path: 'screenshots/Lead/LeadAllFields-2-list.png' });
 
   // Details page
   await expect(async () => {
@@ -146,5 +146,5 @@ test('Lead - create with every field and verify list columns and details', async
   await expectField('Organization', 'Annual revenue', '1 - 10M USD'); // 5,000,000 is shown as its range
   await expectField('Person', 'Seniority', lead.seniority);
   expect.soft(details, 'Phone type').toContain(lead.phoneType);
-  await page.screenshot({ path: 'screenshots/LeadAllFields-3-details.png', fullPage: true });
+  await page.screenshot({ path: 'screenshots/Lead/LeadAllFields-3-details.png', fullPage: true });
 });
