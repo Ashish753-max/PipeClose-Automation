@@ -8,7 +8,7 @@ const { loginStaging } = require('./createDeal');
  * @param {import('@playwright/test').Page} page
  * @param {string} query text to search
  * @param {'Lead'|'Deal'|'Organization'} type type the searched record must be shown as
- * @param {string} screenshot file name in screenshots/
+ * @param {string} screenshot file path inside screenshots/, with its folder, e.g. 'Folder/Name.png'
  */
 async function globalSearch(page, query, type, screenshot) {
   await loginStaging(page);

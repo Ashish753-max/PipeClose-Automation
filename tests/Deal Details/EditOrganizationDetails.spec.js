@@ -17,5 +17,5 @@ test("Deal details - edit organization details", async ({ page }) => {
   for (const field of fields) await editField(page, field);
 
   await expectSavedAfterReload(page, fields);
-  await page.screenshot({ path: 'screenshots/DealDetails-EditOrganizationDetails.png' });
+  await page.screenshot({ path: 'screenshots/DealDetails/DealDetails-EditOrganizationDetails.png' });
 });

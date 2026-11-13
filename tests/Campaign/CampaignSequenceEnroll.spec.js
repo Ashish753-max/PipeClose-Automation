@@ -94,7 +94,7 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
   expect(campaignRes.status()).toBe(201);
   await expect(page.getByRole('heading', { name: CAMPAIGN, level: 2 })).toBeVisible();
   await expect(page.getByText('No sequences yet')).toBeVisible();
-  await page.screenshot({ path: 'screenshots/Campaign-1-created.png' });
+  await page.screenshot({ path: 'screenshots/Campaign/Campaign-1-created.png' });
 
   // 2. Three sequences
   for (const name of SEQUENCES) await createSequence(page, name);
@@ -123,7 +123,7 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
   const stepItems = page.getByRole('list', { name: 'Sequence steps' }).getByRole('listitem');
   await expect(stepItems).toHaveCount(1);
   await expect(stepItems.first()).toContainText(`Step 1: ${subject}`);
-  await page.screenshot({ path: 'screenshots/Campaign-2-email-step.png' });
+  await page.screenshot({ path: 'screenshots/Campaign/Campaign-2-email-step.png' });
 
   // 4. Start the sequence
   await Promise.all([
@@ -172,7 +172,7 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
   expect.soft(notFound, 'Every name should match a lead').toEqual([]);
   const enrollBtn = dialog.getByRole('button', { name: `Enroll ${picked.length}` });
   await expect(enrollBtn).toBeEnabled();
-  await page.screenshot({ path: 'screenshots/Campaign-3-enroll-picked.png' });
+  await page.screenshot({ path: 'screenshots/Campaign/Campaign-3-enroll-picked.png' });
 
   const [enrollRes] = await Promise.all([
     page.waitForResponse(r => /enroll/i.test(r.url()) && r.request().method() === 'POST', { timeout: 60000 }),
@@ -182,7 +182,7 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
   console.log('Enroll response:', enrollRes.status(), JSON.stringify(enrollBody).slice(0, 2000));
   expect(enrollRes.ok(), `Enroll returned ${enrollRes.status()}`).toBeTruthy();
   await page.waitForTimeout(2000);
-  await page.screenshot({ path: 'screenshots/Campaign-4-enroll-result.png' });
+  await page.screenshot({ path: 'screenshots/Campaign/Campaign-4-enroll-result.png' });
   if (await dialog.count()) console.log('After enroll:\n' + await dialog.ariaSnapshot());
   await page.keyboard.press('Escape');
 
@@ -199,7 +199,7 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
     expect(parseInt(summary, 10)).toBeGreaterThan(0);
     expect(states).toMatch(/Scheduled 0, Active 0/);
   }, 'All enrollments should finish sending').toPass({ timeout: 1800000, intervals: [30000] });
-  await page.screenshot({ path: 'screenshots/Campaign-5-enrolled.png', fullPage: true });
+  await page.screenshot({ path: 'screenshots/Campaign/Campaign-5-enrolled.png', fullPage: true });
   const rows = await detail.getByRole('listitem').allInnerTexts();
   console.log('Enrolled rows:\n' + rows.join('\n---\n'));
   console.log('Counters:', (await page.getByRole('region', { name: 'Test case 1, so far' }).innerText()).replace(/\s+/g, ' '));
@@ -232,5 +232,5 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
   await expect(page.getByRole('heading', { name: subject, level: 1 })).toBeVisible();
   await expect(page.getByText(`<${SENDER}>`).first()).toBeVisible();
   await expect.soft(page.getByText('{{firstName'), 'Opened email should not show raw merge fields').toHaveCount(0);
-  await page.screenshot({ path: 'screenshots/Campaign-6-sent-opened.png' });
+  await page.screenshot({ path: 'screenshots/Campaign/Campaign-6-sent-opened.png' });
 });

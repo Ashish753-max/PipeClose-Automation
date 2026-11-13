@@ -7,7 +7,7 @@ const { loginStaging } = require('./createDeal');
  * Opens the Nth email of the Inbox (0 = latest), runs the Summarizer and verifies the summary.
  * @param {import('@playwright/test').Page} page
  * @param {number} index position of the email in the Inbox list
- * @param {string} screenshot file name in screenshots/
+ * @param {string} screenshot file path inside screenshots/, with its folder, e.g. 'Folder/Name.png'
  */
 async function summarizeEmail(page, index, screenshot) {
   await loginStaging(page);

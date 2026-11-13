@@ -10,7 +10,7 @@ const normalize = text => text.replace(/\s+/g, '');
 
 test('Deal details - Suggest Next Email, Save Draft, draft shows in Mail Drafts', async ({ page }) => {
   test.setTimeout(600000);
-  const shot = step => page.screenshot({ path: `screenshots/SuggestNextEmailSaveDraft-${step}.png` });
+  const shot = step => page.screenshot({ path: `screenshots/DealDetails/SuggestNextEmailSaveDraft-${step}.png` });
   const person = await openNewDeal(page);
   const main = page.getByRole('main');
   await page.waitForTimeout(3000); // AI analysis re-renders the page when a deal is first opened

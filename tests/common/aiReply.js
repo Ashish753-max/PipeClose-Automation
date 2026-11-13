@@ -8,7 +8,7 @@ const { loginStaging } = require('./createDeal');
  * The draft is closed without sending.
  * @param {import('@playwright/test').Page} page
  * @param {number} index position of the email in the Inbox list
- * @param {string} screenshot file name in screenshots/
+ * @param {string} screenshot file path inside screenshots/, with its folder, e.g. 'Folder/Name.png'
  */
 async function aiReply(page, index, screenshot) {
   await loginStaging(page);

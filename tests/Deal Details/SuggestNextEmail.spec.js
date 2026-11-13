@@ -39,7 +39,7 @@ async function checkSuggestion(page, person, mode, trigger) {
   for (const name of ['Send', 'Save Draft', 'AI Refine']) {
     await expect(popup.getByRole('button', { name, exact: true })).toBeVisible();
   }
-  await page.screenshot({ path: `screenshots/SuggestNextEmail-${mode}.png` });
+  await page.screenshot({ path: `screenshots/DealDetails/SuggestNextEmail-${mode}.png` });
 
   // Close without sending
   await popup.getByRole('button', { name: 'Close' }).click();
@@ -82,7 +82,7 @@ test('Deal details - Suggest Next Email (standard and Deep Research)', async ({ 
   const alert = page.getByRole('alert').filter({ hasText: /request|research|website|domain/i }).first();
   await expect(alert).toBeVisible();
   console.log(`[deep] message without website: "${await alert.innerText()}"`);
-  await page.screenshot({ path: 'screenshots/SuggestNextEmail-deep-no-website.png' });
+  await page.screenshot({ path: 'screenshots/DealDetails/SuggestNextEmail-deep-no-website.png' });
   await expect.soft(alert, 'Error should tell the user to add a website or work email').toContainText(/website|domain/i);
   // The message must be readable while the Deep Research dialog is still open
   const alertOnTop = await alert.evaluate(el => {

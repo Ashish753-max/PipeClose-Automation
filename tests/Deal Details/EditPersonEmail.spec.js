@@ -12,5 +12,5 @@ test("Deal details - edit person email", async ({ page }) => {
   for (const field of fields) await editField(page, field);
 
   await expectSavedAfterReload(page, fields);
-  await page.screenshot({ path: 'screenshots/DealDetails-EditPersonEmail.png' });
+  await page.screenshot({ path: 'screenshots/DealDetails/DealDetails-EditPersonEmail.png' });
 });

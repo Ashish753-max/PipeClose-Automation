@@ -22,7 +22,7 @@ async function openNewDeal(page) {
     value: '2500',
     phone: '9876543210',
     email: 'deal.details@gmail.com',
-    screenshot: 'DealDetails-created.png',
+    screenshot: 'DealDetails/DealDetails-created.png',
   }, { checkSuccessMessage: false });
 
   await page.getByRole('heading', { name: new RegExp(`^${person} - `), level: 4 }).first().click();

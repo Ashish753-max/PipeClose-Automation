@@ -1,5 +1,5 @@
 // tests/common/mail.js
-// Helpers for the Mail pages (used by the Star email and Campaign scripts)
+// Helpers for the Mail pages (used by the Star email, Email Actions and Campaign scripts)
 const { expect } = require('@playwright/test');
 
 // All email rows in the open list. Each row shows one address as a level-4 heading (the sender in Inbox, the
@@ -53,6 +53,42 @@ async function openSent(page, mailbox) {
   return body.data.emails;
 }
 
+// Opens a folder of the mailbox from the sidebar ('Inbox', 'Archive', 'Spam', 'Trash', ...) and returns what its list
+// loaded: { emails, total }, with the emails in the same order as the rows. Clicking the folder that is already open
+// does not load it again, so another folder is opened first.
+async function openFolder(page, mailbox, folder) {
+  const name = folder.toLowerCase();
+  // The sidebar button can carry a count, e.g. "Trash 1"
+  const folderButton = f => page.getByRole('button', { name: new RegExp(`^${f}\\s*\\d*$`) }).first();
+  const load = async f => {
+    const [response] = await Promise.all([
+      page.waitForResponse(res => isEmailList(res, f.toLowerCase(), mailbox)),
+      folderButton(f).click(),
+    ]);
+    expect(response.status(), `${f} should load`).toBe(200);
+    return response;
+  };
+  const isOpen = name === 'inbox' ? !page.url().includes('folder=') : page.url().includes(`folder=${name}`);
+  if (isOpen) await load(name === 'inbox' ? 'Sent' : 'Inbox');
+  const response = await load(folder);
+  if (name === 'inbox') {
+    await expect(page).not.toHaveURL(/folder=/);
+  } else {
+    await expect(page).toHaveURL(new RegExp(`folder=${name}`));
+  }
+  return (await response.json()).data;
+}
+
+// Checks the count above the list, e.g. "1-50 of 116", or "Nothing here" when the folder is empty
+async function expectCount(page, total) {
+  if (total === 0) {
+    await expect(page.getByRole('heading', { name: 'Nothing here' })).toBeVisible();
+    return;
+  }
+  const count = page.getByText(/^\s*\d+-\d+\s*of\s*\d+\s*$/).first();
+  await expect(count).toHaveText(`1-${Math.min(total, 50)} of ${total}`); // a page lists up to 50 emails
+}
+
 // Scrolls the email list until the row is drawn. The list only draws the rows in view (about nine on a 720px
 // high screen), so an older email has no row until the list is scrolled down to it.
 async function scrollToEmailRow(page, row) {
@@ -64,4 +100,4 @@ async function scrollToEmailRow(page, row) {
   expect(await row.count(), 'The email should be in the list').toBeGreaterThan(0);
 }
 
-module.exports = { emailRows, isEmailList, openMail, useMailbox, openSent, scrollToEmailRow };
+module.exports = { emailRows, isEmailList, openMail, useMailbox, openSent, openFolder, expectCount, scrollToEmailRow };
