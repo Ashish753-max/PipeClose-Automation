@@ -32,5 +32,5 @@ test("Lead details - Cancel discards the edit", async ({ page }) => {
   // Still the old value after reload
   await page.reload();
   await expect(fieldRow(page, 'Person', 'First name')).toContainText(person, { timeout: 30000 });
-  await page.screenshot({ path: 'screenshots/LeadDetails-EditCancel.png' });
+  await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-EditCancel.png' });
 });

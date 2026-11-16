@@ -29,6 +29,6 @@ test("valid login", async ({ page }) => {
   await page.waitForTimeout(2000);
   
   // Take screenshot after execution is completed
-  await page.screenshot({ path: 'screenshots/profile-view.png' });
+  await page.screenshot({ path: 'screenshots/Profile/profile-view.png' });
 
 });

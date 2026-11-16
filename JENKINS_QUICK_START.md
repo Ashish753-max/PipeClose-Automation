@@ -2,15 +2,22 @@
 
 ## ✅ What Has Been Setup For You
 
-Your project is now ready for Jenkins integration with 4 new files:
-
 | File | Purpose |
 |------|---------|
-| **Jenkinsfile** | Pipeline configuration (automation) |
-| **package.json** | Updated with test scripts |
+| **Jenkinsfile** | The pipeline: install, run the tests, publish the reports |
+| **playwright.config.js** | CI settings, switched on when `CI` is set (Jenkins sets it) |
 | **JENKINS_SETUP.md** | Complete setup guide |
-| **setup-jenkins.bat** (Windows) | Automated setup script |
-| **setup-jenkins.sh** (Mac/Linux) | Automated setup script |
+
+### What the pipeline does
+
+1. **Checkout** the code from Git
+2. **Install dependencies** with `npm ci` (exactly what `package-lock.json` lists)
+3. **Install browser**: `npx playwright install chromium` (downloaded once, then reused)
+4. **Run tests** against staging with `npx playwright test`
+5. **Publish**: Test Results (JUnit), the Playwright HTML report, and the screenshots, plus videos and traces of failed tests
+
+A build is **green** when every test passes, **yellow (UNSTABLE)** when some tests fail,
+and **red** only when the pipeline itself breaks (e.g. `npm ci` fails).
 
 ---
 
@@ -18,10 +25,10 @@ Your project is now ready for Jenkins integration with 4 new files:
 
 ### **For Windows Users:**
 
-1. **Run the setup script** (in your project folder):
-   ```bash
-   setup-jenkins.bat
-   ```
+1. **Prepare the Jenkins machine:**
+   - Install **Node.js 18 or newer**: https://nodejs.org/ (`node` and `npm` must work in a Windows command prompt)
+   - In Jenkins: **Manage Jenkins** → **Plugins**, check these are installed:
+     **Pipeline**, **Git**, **HTML Publisher**, **JUnit**
 
 2. **Start Jenkins** (if not running):
    ```bash
@@ -40,9 +47,19 @@ Your project is now ready for Jenkins integration with 4 new files:
    - Click **Save**
 
 4. **Run Tests:**
-   - Click **"Build Now"**
+   - Click **"Build Now"** (the first build sets up the parameters below; after that the button is **"Build with Parameters"**)
    - View live console output
-   - See HTML report after completion
+   - See **Test Results** and **Playwright Test Report** on the build page after completion
+
+---
+
+## 🎛️ Build with Parameters
+
+| Parameter | Default | What it does |
+|-----------|---------|--------------|
+| **TEST_PATH** | *(empty)* | Folder or file to run, e.g. `tests/Login` or `tests/Email Sent`. Empty runs the whole suite. |
+| **WORKERS** | `2` | How many tests run at once. Staging slows down and pages time out above about 4. |
+| **SHOW_DEFECTS** | off | Makes the tests that check known defects fail, so the report shows the details. |
 
 ---
 
@@ -90,8 +107,8 @@ After each test run, you'll see:
 
 - ✅ **Build Status** (Passed/Failed)
 - 📊 **Test Results** (passed/failed count)
-- 📸 **Screenshots** (from failed tests)
-- 🎬 **Video Recordings** (test sessions)
+- 📸 **Screenshots** (the ones the tests save, in `screenshots/<Module>/`)
+- 🎬 **Video Recordings and traces** (failed tests only)
 - 📋 **HTML Report** (detailed test breakdown)
 - 📝 **Console Output** (logs and errors)
 
@@ -103,29 +120,40 @@ After each test run, you'll see:
 |-------|----------|
 | **"java not found"** | Install Java JDK 11+: https://www.oracle.com/java/technologies/downloads/ |
 | **"npm not found"** | Install Node.js: https://nodejs.org/ |
-| **Tests timeout** | Increase timeout in `playwright.config.js` |
-| **Permission denied** | Run script as Administrator (Windows) |
-| **No report showing** | Install "Publish HTML Reports" plugin in Jenkins |
+| **Tests timeout / pages do not load** | Staging is overloaded: lower **WORKERS** (e.g. 1 or 2) |
+| **Permission denied** | Run Jenkins as Administrator (Windows) |
+| **No report showing** | Install the "HTML Publisher" plugin in Jenkins |
+| **Playwright report opens blank** | Jenkins' security policy blocks the report's scripts. Download `playwright-report` from the build's artifacts and open `index.html`, or ask the Jenkins admin to relax the Content Security Policy for HTML reports |
+| **No "Test Results" on the build** | Install the "JUnit" plugin in Jenkins |
 
 ---
 
 ## 📝 Environment Variables
 
-Jenkins automatically sets:
-- `NODE_ENV = 'ci'`
-- `CI = 'true'`
+The pipeline sets `CI = 'true'`, `WORKERS` and `SHOW_DEFECTS` (from the build parameters).
 
-This enables CI-specific settings in your Playwright config:
-- Retries enabled (2 retries on CI)
-- Single worker (no parallel)
-- Video recording on failures
-- Detailed tracing
+`CI` switches on these settings in `playwright.config.js` (running locally without it is unchanged):
+
+- Failed tests are retried up to 2 times, with a trace on the first retry
+- 2 tests at a time (or the **WORKERS** parameter)
+- Video kept only for failed tests
+- Reports: a line per test in the console, the HTML report, and JUnit results (`test-results/junit.xml`)
+- `test.only` left in the code fails the build
+- Skipped on CI: `tests/Practice`, `tests/Basic Script`, `LoginPractice.spec.js` and `TMLoginSuccessful.spec.js`
+  (practice scripts and tests of other websites)
+
+To try the CI settings on your machine:
+
+```bash
+set CI=1&& npx playwright test tests/Login        (Windows cmd)
+CI=1 npx playwright test tests/Login              (Git Bash)
+```
 
 ---
 
 ## 🎓 Next Steps
 
-1. ✅ **Run setup script** (setup-jenkins.bat or setup-jenkins.sh)
+1. ✅ **Install Node.js and the Jenkins plugins** (see Quick Setup)
 2. ✅ **Read JENKINS_SETUP.md** for detailed guide
 3. ✅ **Create Jenkins pipeline job**
 4. ✅ **Connect your Git repository**

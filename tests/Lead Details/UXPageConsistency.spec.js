@@ -25,5 +25,5 @@ test("Lead details - UX: heading and Summary stay in line with the edits", async
   const { stored } = await tryValue(page, '1234567');
   console.log(`Value 1234567 shown as "${stored}"`);
   expect.soft(stored, 'Value 1234567 in USD should be shown as $1,234,567').toBe('$1,234,567');
-  await page.screenshot({ path: 'screenshots/LeadDetails-UXPageConsistency.png' });
+  await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-UXPageConsistency.png' });
 });

@@ -96,7 +96,7 @@ test("valid login", async ({ page }) => {
               await page.getByRole('button', { name: 'Schedule' }).click();
 
               // Take final screenshot
-              await page.screenshot({ path: 'screenshots/CreateActivityCall1-end.png' });
+              await page.screenshot({ path: 'screenshots/Activities/CreateActivityCall1-end.png' });
 
 
 });

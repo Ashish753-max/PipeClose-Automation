@@ -49,7 +49,7 @@ test("Lead details - UX: Enter saves, Escape cancels, typed text is not lost", a
   await lastName.hover();
   await lastName.getByRole('button', { name: 'Edit Last name' }).click();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: 'screenshots/LeadDetails-UXEditorKeys.png' });
+  await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-UXEditorKeys.png' });
   await expect.soft(input, 'Job Title editor with unsaved text should stay open when another field is opened')
     .toHaveValue('Unsaved text', { timeout: 1000 });
   for (const button of await page.getByRole('button', { name: 'Cancel', exact: true }).all()) await button.click();

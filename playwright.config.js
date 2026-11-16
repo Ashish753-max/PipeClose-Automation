@@ -14,16 +14,27 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
+  /* On CI, skip the practice scripts and the tests of other websites: they are not part of the CRM suite */
+  testIgnore: process.env.CI ? [
+    '**/Practice/**',
+    '**/Basic Script/**',
+    '**/Login/LoginPractice.spec.js',
+    '**/Login/TMLoginSuccessful.spec.js',
+  ] : [],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  /* How many tests run at once: set WORKERS to choose. On CI 2 by default, as staging slows down
+     when many tests hit it together (all tests also share one account). */
+  workers: process.env.WORKERS ? Number(process.env.WORKERS) : (process.env.CI ? 2 : undefined),
+  /* Reporter to use. See https://playwright.dev/docs/test-reporters
+     On CI: a line per test in the build log, the HTML report, and JUnit results for Jenkins' test trend. */
+  reporter: process.env.CI
+    ? [['list'], ['html', { open: 'never' }], ['junit', { outputFile: 'test-results/junit.xml' }]]
+    : 'html',
   /* Set timeout for individual test actions */
   timeout: 120000, // 120 seconds
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -34,14 +45,12 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     
-    /* Enable video recording for all tests */
-    video: 'on',
-    
-    /* Set video size for better visibility */
-    videoSize: { width: 1280, height: 720 },
-    
-    /* Set output directory for videos with test name */
-    videoDir: 'videos',
+    /* Video of every test when run locally. On CI only failed tests keep theirs, to keep builds small and fast.
+       Videos are saved with each test's results in test-results/. */
+    video: {
+      mode: process.env.CI ? 'retain-on-failure' : 'on',
+      size: { width: 1280, height: 720 },
+    },
   },
 
   /* Configure projects for major browsers */

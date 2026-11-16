@@ -72,7 +72,7 @@ test("Sent folder shows the recipient of a sent email", async ({ page }) => {
   // Type above the signature (clicking the editor puts the cursor at the end of it)
   await page.locator('.ProseMirror p').first().click();
   await page.keyboard.type(body);
-  await page.screenshot({ path: 'screenshots/SentFolderRecipient-1-compose.png' });
+  await page.screenshot({ path: 'screenshots/EmailSent/SentFolderRecipient-1-compose.png' });
 
   // Send and check what went to the server
   const [sent] = await Promise.all([
@@ -106,14 +106,14 @@ test("Sent folder shows the recipient of a sent email", async ({ page }) => {
   await expect(row.locator('div.rounded-full.text-white'), "Avatar should show the recipient's initial")
     .toHaveText(RECIPIENT[0].toUpperCase());
   console.log(`Sent folder row shows "${await shownAddress.innerText()}"`);
-  await page.screenshot({ path: 'screenshots/SentFolderRecipient-2-sent-folder.png' });
+  await page.screenshot({ path: 'screenshots/EmailSent/SentFolderRecipient-2-sent-folder.png' });
 
   // Opened email: from the sender, to the recipient
   await row.click();
   await expect(page.getByRole('heading', { name: subject, level: 1 })).toBeVisible();
   await expect(page.getByText(`<${SENDER}>`).first()).toBeVisible();
   await expect(page.getByText(`to ${RECIPIENT}`).first()).toBeVisible();
-  await page.screenshot({ path: 'screenshots/SentFolderRecipient-3-opened.png' });
+  await page.screenshot({ path: 'screenshots/EmailSent/SentFolderRecipient-3-opened.png' });
 
   // Still the recipient after reloading the page
   await page.goto(`${BASE_URL}/mail`);

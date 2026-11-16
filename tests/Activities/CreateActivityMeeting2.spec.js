@@ -98,7 +98,7 @@ await page.waitForTimeout(1000);
               await page.getByRole('button', { name: 'Schedule' }).click();
 
               // Take final screenshot
-              await page.screenshot({ path: 'screenshots/CreateActivityMeeting2-end.png' });
+              await page.screenshot({ path: 'screenshots/Activities/CreateActivityMeeting2-end.png' });
 
 
 });

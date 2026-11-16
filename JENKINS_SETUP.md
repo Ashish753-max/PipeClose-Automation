@@ -55,50 +55,14 @@ If you prefer not to use Jenkinsfile:
 
 #### 2. **Select "Pipeline" and Configure**
    - Select **Definition**: **"Pipeline script"**
-   - Paste this script in the **Script** box:
+   - Paste the contents of the project's `Jenkinsfile` in the **Script** box
+   - A pasted script is not linked to Git, so in the **Checkout** stage replace `checkout scm` with:
 
 ```groovy
-pipeline {
-    agent any
-    
-    environment {
-        NODE_ENV = 'ci'
-        CI = 'true'
-    }
-    
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-        
-        stage('Run Tests') {
-            steps {
-                sh 'npm test'
-            }
-        }
-    }
-    
-    post {
-        always {
-            publishHTML([
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                reportName: 'Playwright Report'
-            ])
-            archiveArtifacts artifacts: 'test-results/**/*,screenshots/**/*', 
-                             allowEmptyArchive: true
-        }
-    }
-}
+git url: 'https://github.com/Ashish753-max/CRM-Automation.git', branch: 'main'
 ```
+
+Option 1 (Pipeline script from SCM) is better: the pipeline then always matches the `Jenkinsfile` in Git.
 
 ---
 

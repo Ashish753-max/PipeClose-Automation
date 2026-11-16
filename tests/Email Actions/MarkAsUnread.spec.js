@@ -75,12 +75,12 @@ test("Mark Inbox email as unread using hover button", async ({ page }) => {
   const unreadBefore = await readTotal();
   await openFilter('All mail');
   console.log(`Unread total before: ${unreadBefore}`);
-  await page.screenshot({ path: 'screenshots/MarkAsUnread-1-read.png' });
+  await page.screenshot({ path: 'screenshots/EmailActions/MarkAsUnread-1-read.png' });
 
   // Hover and click "Mark as unread"
   await clickReadToggle('Mark as unread');
   await expectUnread();
-  await page.screenshot({ path: 'screenshots/MarkAsUnread-2-unread.png' });
+  await page.screenshot({ path: 'screenshots/EmailActions/MarkAsUnread-2-unread.png' });
 
   // Unread filter count goes up by one and lists the email
   await openFilter('Unread');
@@ -94,7 +94,7 @@ test("Mark Inbox email as unread using hover button", async ({ page }) => {
   await expect(firstRow).toBeVisible({ timeout: 30000 });
   await expect(firstRow).toContainText(subject);
   await expectUnread();
-  await page.screenshot({ path: 'screenshots/MarkAsUnread-3-after-reload.png' });
+  await page.screenshot({ path: 'screenshots/EmailActions/MarkAsUnread-3-after-reload.png' });
 
   // Put the email back to read
   await clickReadToggle('Mark as read');

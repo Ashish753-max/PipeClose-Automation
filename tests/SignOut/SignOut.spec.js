@@ -32,6 +32,6 @@ test("valid login", async ({ page }) => {
   await page.waitForTimeout(2000);
   
   // Take screenshot after sign out is completed
-  await page.screenshot({ path: 'screenshots/signout-success.png' });
+  await page.screenshot({ path: 'screenshots/SignOut/signout-success.png' });
 
 });

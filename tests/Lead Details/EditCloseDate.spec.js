@@ -32,5 +32,5 @@ test("Lead details - set expected close date in the Summary", async ({ page }) =
 
   await reloadLead(page);
   await expect(summaryBlock(page).getByRole('button', { name: label, exact: true }), 'Close date should stay after reload').toBeVisible();
-  await page.screenshot({ path: 'screenshots/LeadDetails-EditCloseDate.png' });
+  await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-EditCloseDate.png' });
 });

@@ -15,5 +15,5 @@ test("Lead details - edit person job title, seniority, LinkedIn and requirements
   for (const field of fields) await editField(page, field);
 
   await expectSavedAfterReload(page, fields);
-  await page.screenshot({ path: 'screenshots/LeadDetails-EditPersonDetails.png' });
+  await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-EditPersonDetails.png' });
 });

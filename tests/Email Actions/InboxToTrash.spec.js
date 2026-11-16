@@ -108,7 +108,7 @@ test("Move email from Inbox to Trash using hover delete", async ({ page }) => {
       emailTime = (await firstRow.getByText(/^\s*(\d{1,2}:\d{2}\s*[AP]M|Yesterday|[A-Z][a-z]{2} \d{1,2})\s*$/).first().innerText()).trim();
       console.log(`Inbox total before: ${inboxBefore}`);
       console.log(`Email to delete: from "${emailSender}", subject "${emailSubject}", time "${emailTime}"`);
-      await page.screenshot({ path: 'screenshots/InboxToTrash-1-inbox-before.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToTrash-1-inbox-before.png' });
     } catch (error) {
       throw new Error(`Failed to read Inbox: ${error.message}`);
     }
@@ -118,10 +118,10 @@ test("Move email from Inbox to Trash using hover delete", async ({ page }) => {
       await firstRow.hover();
       const deleteIcon = firstRow.getByRole('button', { name: 'Delete', exact: true });
       await expect(deleteIcon).toBeVisible({ timeout: 5000 });
-      await page.screenshot({ path: 'screenshots/InboxToTrash-2-hover-actions.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToTrash-2-hover-actions.png' });
       await deleteIcon.click();
       await page.waitForTimeout(2000);
-      await page.screenshot({ path: 'screenshots/InboxToTrash-3-after-delete.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToTrash-3-after-delete.png' });
     } catch (error) {
       throw new Error(`Failed to delete email from hover actions: ${error.message}`);
     }
@@ -152,9 +152,9 @@ test("Move email from Inbox to Trash using hover delete", async ({ page }) => {
         console.warn(`WARNING: sender differs - Inbox showed "${emailSender}", Trash shows "${trashSender}"`);
       }
       console.log(`Email "${emailSubject}" (${emailTime}) found in Trash, sender "${trashSender}".`);
-      await page.screenshot({ path: 'screenshots/InboxToTrash-4-trash-verified.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToTrash-4-trash-verified.png' });
     } catch (error) {
-      await page.screenshot({ path: 'screenshots/InboxToTrash-trash-verify-failed.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToTrash-trash-verify-failed.png' });
       throw new Error(`Email not found in Trash: ${error.message}`);
     }
 

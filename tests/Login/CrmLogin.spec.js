@@ -42,7 +42,7 @@ test("valid login", async function ({ page }) {
 
     // Wait for 5 seconds to ensure dashboard is loaded, then take final screenshot
     await page.waitForTimeout(5000);
-    await page.screenshot({ path: 'screenshots/CRM Login-end.png' });
+    await page.screenshot({ path: 'screenshots/Login/CRM Login-end.png' });
 
   } catch (error) {
     console.error("Test error:", error.message);

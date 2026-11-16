@@ -20,7 +20,7 @@ test("valid login", async function ({ page }) {
 
     // Wait for 5 seconds to ensure dashboard is loaded, then take final screenshot
     //await page.waitForTimeout(000);
-    await page.screenshot({ path: 'screenshots/Dashboard Try it free-end.png' });
+    await page.screenshot({ path: 'screenshots/Dashboard/Dashboard Try it free-end.png' });
 
   } catch (error) {
     console.error("Test error:", error.message);

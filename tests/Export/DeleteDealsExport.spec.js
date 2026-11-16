@@ -48,13 +48,13 @@ test("valid login", async function ({ page }) {
     // click on delete
    await page.getByTitle('Delete this export').nth(0).click();        
             // Take final screenshot
-    await page.screenshot({ path: 'screenshots/DeleteDealsExport-end.png' });
+    await page.screenshot({ path: 'screenshots/Export/DeleteDealsExport-end.png' });
 
     // click on confirm delete button
 await page.getByText('Delete', { exact: true }).click();
 
 // Take final screenshot
-    await page.screenshot({ path: 'screenshots/DeleteDealsExport-end.png' });
+    await page.screenshot({ path: 'screenshots/Export/DeleteDealsExport-end.png' });
 
 
     

@@ -26,7 +26,7 @@ test("Convert a lead to a deal from the Action menu", async ({ page }) => {
   await expect(form.getByPlaceholder('0')).toHaveValue('2500');
   await expect(form.getByPlaceholder('Phone number')).toHaveValue('(987) 654-3210');
   await expect(form.getByPlaceholder('Email address')).toHaveValue(/^lead\.details\+\d+@gmail\.com$/);
-  await page.screenshot({ path: 'screenshots/ConvertLead-form.png' });
+  await page.screenshot({ path: 'screenshots/LeadToDeal/ConvertLead-form.png' });
 
   // Save creates the deal from this lead
   const [response] = await Promise.all([
@@ -43,7 +43,7 @@ test("Convert a lead to a deal from the Action menu", async ({ page }) => {
   await expect(page).toHaveURL(/\/deals$/, { timeout: 30000 });
   await expect(page.getByRole('heading', { name: deal.title, exact: true, level: 4 }).first(), 'New deal should be on the board')
     .toBeVisible({ timeout: 30000 });
-  await page.screenshot({ path: 'screenshots/ConvertLead-deal.png' });
+  await page.screenshot({ path: 'screenshots/LeadToDeal/ConvertLead-deal.png' });
   console.log(`Lead ${lead.id} converted to deal ${deal.id} "${deal.title}"`);
 
   // Leads list: the lead is gone and the counter went down by one
@@ -57,5 +57,5 @@ test("Convert a lead to a deal from the Action menu", async ({ page }) => {
   await page.getByRole('button', { name: 'Converted to deals', exact: true }).click();
   await expect(page.getByRole('cell', { name: lead.person, exact: true }), 'Lead should be listed under Converted to deals')
     .toBeVisible({ timeout: 30000 });
-  await page.screenshot({ path: 'screenshots/ConvertLead-converted-view.png' });
+  await page.screenshot({ path: 'screenshots/LeadToDeal/ConvertLead-converted-view.png' });
 });

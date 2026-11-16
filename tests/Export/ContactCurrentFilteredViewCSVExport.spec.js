@@ -63,7 +63,7 @@ test("valid login", async function ({ page }) {
             await page.waitForTimeout(1000);
 
             // Take final screenshot
-    await page.screenshot({ path: 'screenshots/ContactCurrentFilteredViewCSVExport-end.png' });
+    await page.screenshot({ path: 'screenshots/Export/ContactCurrentFilteredViewCSVExport-end.png' });
 
 
     

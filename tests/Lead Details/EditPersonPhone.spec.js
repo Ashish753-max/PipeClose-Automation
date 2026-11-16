@@ -12,5 +12,5 @@ test("Lead details - edit person phone number", async ({ page }) => {
   for (const field of fields) await editField(page, field);
 
   await expectSavedAfterReload(page, fields);
-  await page.screenshot({ path: 'screenshots/LeadDetails-EditPersonPhone.png' });
+  await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-EditPersonPhone.png' });
 });

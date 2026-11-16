@@ -60,7 +60,7 @@ await page.getByText('Delete', { exact: true }).click();
 
 
 // Take final screenshot
-    await page.screenshot({ path: 'screenshots/DeleteLeadsExport-end.png' });
+    await page.screenshot({ path: 'screenshots/Export/DeleteLeadsExport-end.png' });
             
 
 

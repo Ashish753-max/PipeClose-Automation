@@ -184,12 +184,12 @@ test("valid login", async ({ page }) => {
       const successMsg = page.locator('text=Email sent|Success|Sent successfully');
       if (!await successMsg.isVisible({ timeout: 5000 }).catch(() => false)) {
         console.warn("Success message not found, but email may have been sent");
-        await page.screenshot({ path: 'screenshots/email-send-failure2.png' });
+        await page.screenshot({ path: 'screenshots/EmailSent/email-send-failure2.png' });
       } else {
-        await page.screenshot({ path: 'screenshots/email-sent.png' });
+        await page.screenshot({ path: 'screenshots/EmailSent/email-sent.png' });
       }
     } catch (error) {
-      await page.screenshot({ path: 'screenshots/email-send-error.png' });
+      await page.screenshot({ path: 'screenshots/EmailSent/email-send-error.png' });
       throw new Error(`Failed to send email: ${error.message}`);
     }
 
@@ -227,14 +227,14 @@ test("valid login", async ({ page }) => {
       await expect(page.getByText(`<${sender}>`).first()).toBeVisible({ timeout: 20000 });
       await expect(page.getByText(`to ${recipient}`).first()).toBeVisible({ timeout: 20000 });
       console.log(`Email "${subject}" found in Sent folder, from ${sender} to ${recipient}.`);
-      await page.screenshot({ path: 'screenshots/SendMail1-sent-verified.png' });
+      await page.screenshot({ path: 'screenshots/EmailSent/SendMail1-sent-verified.png' });
     } catch (error) {
-      await page.screenshot({ path: 'screenshots/SendMail1-sent-verify-failed.png' });
+      await page.screenshot({ path: 'screenshots/EmailSent/SendMail1-sent-verify-failed.png' });
       throw new Error(`Sent email verification failed: ${error.message}`);
     }
 
     // Take final screenshot
-    await page.screenshot({ path: 'screenshots/SendMail1-end.png' });
+    await page.screenshot({ path: 'screenshots/EmailSent/SendMail1-end.png' });
 
   } catch (error) {
     console.error("Test error:", error.message);

@@ -11,5 +11,5 @@ test("Lead details - edit lead value in the Summary", async ({ page }) => {
 
   await reloadLead(page);
   await expect(amount(page), 'Value should stay after reload').toHaveText('$75,000');
-  await page.screenshot({ path: 'screenshots/LeadDetails-EditValue.png' });
+  await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-EditValue.png' });
 });

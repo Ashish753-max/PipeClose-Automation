@@ -63,7 +63,7 @@ test("valid login", async ({ page }) => {
          await page.waitForTimeout(1000);
 
           // Take final screenshot
-    await page.screenshot({ path: 'screenshots/MarkToDoActivity-end.png' });
+    await page.screenshot({ path: 'screenshots/Activities/MarkToDoActivity-end.png' });
 
   
 

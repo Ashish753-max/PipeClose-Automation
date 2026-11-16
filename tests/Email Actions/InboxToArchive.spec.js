@@ -108,7 +108,7 @@ test("Move email from Inbox to Archive using hover archive icon", async ({ page 
       emailTime = (await firstRow.getByText(/^\s*(\d{1,2}:\d{2}\s*[AP]M|Yesterday|[A-Z][a-z]{2} \d{1,2})\s*$/).first().innerText()).trim();
       console.log(`Inbox total before: ${inboxBefore}`);
       console.log(`Email to archive: from "${emailSender}", subject "${emailSubject}", time "${emailTime}"`);
-      await page.screenshot({ path: 'screenshots/InboxToArchive-1-inbox-before.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToArchive-1-inbox-before.png' });
     } catch (error) {
       throw new Error(`Failed to read Inbox: ${error.message}`);
     }
@@ -118,10 +118,10 @@ test("Move email from Inbox to Archive using hover archive icon", async ({ page 
       await firstRow.hover();
       const archiveIcon = firstRow.getByRole('button', { name: 'Archive', exact: true });
       await expect(archiveIcon).toBeVisible({ timeout: 5000 });
-      await page.screenshot({ path: 'screenshots/InboxToArchive-2-hover-actions.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToArchive-2-hover-actions.png' });
       await archiveIcon.click();
       await page.waitForTimeout(2000);
-      await page.screenshot({ path: 'screenshots/InboxToArchive-3-after-archive.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToArchive-3-after-archive.png' });
     } catch (error) {
       throw new Error(`Failed to archive email from hover actions: ${error.message}`);
     }
@@ -152,9 +152,9 @@ test("Move email from Inbox to Archive using hover archive icon", async ({ page 
         console.warn(`WARNING: sender differs - Inbox showed "${emailSender}", Archive shows "${archiveSender}"`);
       }
       console.log(`Email "${emailSubject}" (${emailTime}) found in Archive, sender "${archiveSender}".`);
-      await page.screenshot({ path: 'screenshots/InboxToArchive-4-archive-verified.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToArchive-4-archive-verified.png' });
     } catch (error) {
-      await page.screenshot({ path: 'screenshots/InboxToArchive-archive-verify-failed.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToArchive-archive-verify-failed.png' });
       throw new Error(`Email not found in Archive: ${error.message}`);
     }
 

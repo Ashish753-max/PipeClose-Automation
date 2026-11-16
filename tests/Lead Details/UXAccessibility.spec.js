@@ -52,5 +52,5 @@ test("Lead details - UX: edit icons work for keyboard and screen reader users", 
   await expect(toast, 'An error toast should show').toBeVisible({ timeout: 10000 });
   await expect.soft(toast.locator('xpath=ancestor-or-self::*[@role="alert" or @role="status" or @aria-live]'),
     'The error toast should be announced to screen readers').not.toHaveCount(0);
-  await page.screenshot({ path: 'screenshots/LeadDetails-UXAccessibility.png' });
+  await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-UXAccessibility.png' });
 });

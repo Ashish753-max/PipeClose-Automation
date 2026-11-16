@@ -108,7 +108,7 @@ test("Move email from Inbox to Spam using hover spam icon", async ({ page }) => 
       emailTime = (await firstRow.getByText(/^\s*(\d{1,2}:\d{2}\s*[AP]M|Yesterday|[A-Z][a-z]{2} \d{1,2})\s*$/).first().innerText()).trim();
       console.log(`Inbox total before: ${inboxBefore}`);
       console.log(`Email to mark as spam: from "${emailSender}", subject "${emailSubject}", time "${emailTime}"`);
-      await page.screenshot({ path: 'screenshots/InboxToSpam-1-inbox-before.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToSpam-1-inbox-before.png' });
     } catch (error) {
       throw new Error(`Failed to read Inbox: ${error.message}`);
     }
@@ -118,10 +118,10 @@ test("Move email from Inbox to Spam using hover spam icon", async ({ page }) => 
       await firstRow.hover();
       const spamIcon = firstRow.getByRole('button', { name: 'Mark as spam', exact: true });
       await expect(spamIcon).toBeVisible({ timeout: 5000 });
-      await page.screenshot({ path: 'screenshots/InboxToSpam-2-hover-actions.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToSpam-2-hover-actions.png' });
       await spamIcon.click();
       await page.waitForTimeout(2000);
-      await page.screenshot({ path: 'screenshots/InboxToSpam-3-after-spam.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToSpam-3-after-spam.png' });
     } catch (error) {
       throw new Error(`Failed to mark email as spam from hover actions: ${error.message}`);
     }
@@ -152,9 +152,9 @@ test("Move email from Inbox to Spam using hover spam icon", async ({ page }) => 
         console.warn(`WARNING: sender differs - Inbox showed "${emailSender}", Spam shows "${spamSender}"`);
       }
       console.log(`Email "${emailSubject}" (${emailTime}) found in Spam, sender "${spamSender}".`);
-      await page.screenshot({ path: 'screenshots/InboxToSpam-4-spam-verified.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToSpam-4-spam-verified.png' });
     } catch (error) {
-      await page.screenshot({ path: 'screenshots/InboxToSpam-spam-verify-failed.png' });
+      await page.screenshot({ path: 'screenshots/EmailActions/InboxToSpam-spam-verify-failed.png' });
       throw new Error(`Email not found in Spam: ${error.message}`);
     }
 

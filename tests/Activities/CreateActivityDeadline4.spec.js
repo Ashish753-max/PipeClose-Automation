@@ -95,6 +95,6 @@ test("valid login", async ({ page }) => {
   }
   await page.waitForTimeout(1000);
 
- await page.screenshot({ path: 'screenshots/CreateActivityDeadline4-end.png' });
+ await page.screenshot({ path: 'screenshots/Activities/CreateActivityDeadline4-end.png' });
 
 });
