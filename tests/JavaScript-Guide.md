@@ -27,8 +27,6 @@
 17. [Real Examples from Your Code](#real-examples-from-your-code)
 18. [Quick Reference](#quick-reference)
 
----
-
 ## 1. JavaScript Fundamentals
 
 ### What is JavaScript?
