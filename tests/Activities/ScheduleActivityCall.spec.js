@@ -6,3 +6,6 @@ const { scheduleActivity } = require('../common/scheduleActivity');
 test('Activities - schedule a call', async ({ page }) => {
   await scheduleActivity(page, { type: 'Call', start: '10:00 AM', end: '10:30 AM' });
 });
+
+
+
