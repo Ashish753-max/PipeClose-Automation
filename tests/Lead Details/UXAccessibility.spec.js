@@ -54,3 +54,6 @@ test("Lead details - UX: edit icons work for keyboard and screen reader users", 
     'The error toast should be announced to screen readers').not.toHaveCount(0);
   await page.screenshot({ path: 'screenshots/LeadDetails/LeadDetails-UXAccessibility.png' });
 });
+
+
+
