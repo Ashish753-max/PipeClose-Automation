@@ -1,59 +1,19 @@
 const { test, expect } = require('@playwright/test');
 const { loginStaging } = require('../common/createDeal');
+const {
+  BASE_URL, openCampaigns, campaignTabs, openSection, deleteCampaignIfExists, createSequence, chooseSendingAccount,
+  activateSequence, openEnrolled,
+} = require('../common/campaign');
 
-const BASE_URL = 'https://staging.pipeclose.com';
-const CAMPAIGN = 'QA Test 3';
-const SEQUENCES = ['Test case 1', 'Test case 2', 'Test case 3'];
+// Created by this test on every run (only this test uses this name, so no other campaign is ever deleted).
+// A campaign has one sequence.
+const CAMPAIGN = 'QA Auto - Sequence enroll';
+const SEQUENCE = 'Test case 1';
 const SENDER = 'ashish.rai@appnox.ai';
 const LEAD_NAMES = ['shivang', 'vijay', 'aman', 'govind', 'shashank', 'kunal', 'abhijeet'];
 
 // Address part of a stored value, e.g. "Ashish Rai" <ashish.rai@appnox.ai>
 const addressOf = text => text.match(/[^\s<>"]+@[^\s<>"]+/)?.[0] ?? text;
-
-// Opens a campaign from the breadcrumb switcher; returns false when there is no campaign with that name
-async function openCampaign(page, name) {
-  const heading = page.getByRole('main').getByRole('heading', { level: 2 }).first();
-  await heading.waitFor({ timeout: 30000 });
-  if ((await heading.innerText()).trim() === name) return true;
-  await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('button').first().click();
-  const option = page.getByRole('option', { name, exact: true });
-  if (!(await option.isVisible({ timeout: 5000 }).catch(() => false))) {
-    await page.keyboard.press('Escape');
-    return false;
-  }
-  await option.getByRole('button').click();
-  await expect(heading).toHaveText(name);
-  return true;
-}
-
-// Removes campaigns left by earlier runs so the test starts from "New campaign"
-async function deleteCampaignIfExists(page, name) {
-  while (await openCampaign(page, name)) {
-    await page.getByRole('button', { name: 'Campaign actions' }).click();
-    await page.getByRole('button', { name: 'Delete campaign' }).click();
-    const confirm = page.getByRole('alertdialog').or(page.getByRole('dialog')).last()
-      .getByRole('button', { name: /delete/i });
-    await Promise.all([
-      page.waitForResponse(r => /\/api\/campaigns\//.test(r.url()) && r.request().method() === 'DELETE'),
-      confirm.click(),
-    ]);
-    await page.waitForTimeout(1500);
-    console.log(`Deleted old campaign "${name}"`);
-  }
-}
-
-async function createSequence(page, name) {
-  await page.getByRole('button', { name: 'New sequence' }).click();
-  const create = page.getByRole('dialog').getByRole('button', { name: 'Create' });
-  await expect(create, 'Create should be disabled until a name is typed').toBeDisabled();
-  await page.getByRole('textbox', { name: 'Sequence name' }).fill(name);
-  const [res] = await Promise.all([
-    page.waitForResponse(r => /\/sequences$/.test(r.url()) && r.request().method() === 'POST'),
-    create.click(),
-  ]);
-  expect(res.status(), `Create sequence "${name}"`).toBe(201);
-  await expect(page.getByRole('tab', { name: new RegExp(`^${name}`) })).toBeVisible();
-}
 
 // Opens the sender's Sent folder and returns the emails it loaded
 async function openSent(page) {
@@ -69,19 +29,19 @@ async function openSent(page) {
   return (await list.json()).data.emails;
 }
 
-test('Campaign: create sequences, draft email, enroll leads and verify in Sent', async ({ page }) => {
+test('Campaign: create a campaign and its sequence, draft email, enroll leads and verify in Sent', async ({ page }) => {
   test.setTimeout(2400000); // campaign sends are throttled to about one email every 90 seconds
   const stamp = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-  const subject = `QA Test 3 campaign email ${stamp}`;
+  const subject = `QA Auto campaign email ${stamp}`;
   const body = 'Hi {{firstName|there}},\n\nThis is an automated QA campaign email from PipeClose. Please ignore.\n\nThanks';
+  const main = page.getByRole('main');
 
   await loginStaging(page);
-  await page.locator('a[href="/campaigns"]').first().click({ timeout: 30000 });
-  await page.waitForURL('**/campaigns**');
+  await openCampaigns(page);
   await deleteCampaignIfExists(page, CAMPAIGN);
 
-  // 1. New campaign
-  await page.getByRole('button', { name: 'New campaign' }).click();
+  // 1. New campaign: it opens on its own page, with no sequence yet
+  await main.getByRole('button', { name: 'New campaign' }).click();
   const createCampaign = page.getByRole('dialog').getByRole('button', { name: 'Create' });
   await expect(createCampaign, 'Create should be disabled with an empty name').toBeDisabled();
   await page.getByRole('textbox', { name: 'Campaign name' }).fill('   ');
@@ -92,27 +52,20 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
     createCampaign.click(),
   ]);
   expect(campaignRes.status()).toBe(201);
-  await expect(page.getByRole('heading', { name: CAMPAIGN, level: 2 })).toBeVisible();
-  await expect(page.getByText('No sequences yet')).toBeVisible();
+  await expect(campaignTabs(page)).toBeVisible({ timeout: 30000 });
+  await expect(main.getByRole('heading', { name: CAMPAIGN, level: 2 })).toBeVisible();
+  await openSection(page, 'Sequence');
+  await expect(main.getByText('No sequence in this campaign yet')).toBeVisible();
   await page.screenshot({ path: 'screenshots/Campaign/Campaign-1-created.png' });
 
-  // 2. Three sequences
-  for (const name of SEQUENCES) await createSequence(page, name);
-  await expect(page.getByText('3 sequences · none sending')).toBeVisible();
-  await page.getByRole('tab', { name: /^Test case 1/ }).click();
-  await expect(page.getByRole('heading', { name: 'Test case 1', exact: true, level: 1 })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Activate sequence' }), 'Cannot activate without a step').toBeDisabled();
+  // 2. The campaign's sequence (a campaign has one)
+  await createSequence(page, SEQUENCE);
+  await expect(main.getByText('1 sequence · none sending')).toBeVisible();
 
-  // 3. Sender + email step on Test case 1
-  const sendsFrom = page.getByRole('combobox', { name: 'Sends from' });
-  await Promise.all([
-    page.waitForResponse(r => /\/api\/sequences\/[^/]+$/.test(r.url()) && r.request().method() === 'PATCH'),
-    sendsFrom.selectOption(SENDER),
-  ]);
-  await expect(sendsFrom).toHaveValue(/ashish\.rai@appnox\.ai/);
-
-  const steps = page.getByRole('region', { name: 'Sequence detail' });
-  await steps.getByRole('button', { name: 'Email', exact: true }).click();
+  // 3. Sending account (Settings tab) + email step
+  await chooseSendingAccount(page, SENDER);
+  await openSection(page, 'Sequence');
+  await main.getByRole('button', { name: 'Email', exact: true }).click();
   await page.getByRole('textbox', { name: 'Subject' }).fill(subject);
   await page.getByRole('textbox', { name: 'Body' }).fill(body);
   const [stepRes] = await Promise.all([
@@ -126,18 +79,11 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
   await page.screenshot({ path: 'screenshots/Campaign/Campaign-2-email-step.png' });
 
   // 4. Start the sequence
-  await Promise.all([
-    page.waitForResponse(r => /\/api\/sequences\/[^/]+$/.test(r.url()) && r.request().method() === 'PATCH'
-      && r.request().postData()?.includes('isActive')),
-    page.getByRole('button', { name: 'Activate sequence' }).click(),
-  ]);
-  await expect(page.getByRole('button', { name: 'Pause sequence' })).toBeVisible();
-  await expect(page.getByRole('tab', { name: /^Test case 1 Sending/ })).toBeVisible();
-  await expect(sendsFrom, 'Sender is locked while sending').toBeDisabled();
+  await activateSequence(page);
 
-  // 5. Enrolled tab -> Enroll leads, pick every lead found for each name
-  await page.getByRole('tab', { name: 'Enrolled' }).click();
-  await page.getByRole('button', { name: 'Enroll leads' }).first().click();
+  // 5. Leads tab -> Enroll leads, pick every lead found for each name
+  await openEnrolled(page);
+  await main.getByRole('button', { name: 'Enroll leads' }).first().click();
   const dialog = page.getByRole('dialog');
   const search = dialog.getByRole('textbox', { name: 'Search leads by name' });
   const notFound = [];
@@ -186,23 +132,20 @@ test('Campaign: create sequences, draft email, enroll leads and verify in Sent',
   if (await dialog.count()) console.log('After enroll:\n' + await dialog.ariaSnapshot());
   await page.keyboard.press('Escape');
 
-  // 6. Wait until the step is sent to the enrolled leads
-  const detail = page.getByRole('region', { name: 'Sequence detail' });
+  // 6. Wait until the step is sent to the enrolled leads (the campaign page reloads on its own URL)
   await expect(async () => {
     await page.reload();
-    await openCampaign(page, CAMPAIGN);
-    await page.getByRole('tab', { name: /^Test case 1/ }).click();
-    await page.getByRole('tab', { name: 'Enrolled' }).click();
-    const summary = await detail.getByText(/\d+ people in this sequence/).innerText();
-    const states = await detail.getByRole('img', { name: /^Scheduled/ }).getAttribute('aria-label');
+    await expect(campaignTabs(page)).toBeVisible({ timeout: 30000 });
+    await openEnrolled(page);
+    const summary = await main.getByText(/\d+ people in this sequence/).innerText();
+    const states = await main.getByRole('img', { name: /^Scheduled/ }).getAttribute('aria-label');
     console.log(new Date().toLocaleTimeString(), summary, '|', states);
     expect(parseInt(summary, 10)).toBeGreaterThan(0);
     expect(states).toMatch(/Scheduled 0, Active 0/);
   }, 'All enrollments should finish sending').toPass({ timeout: 1800000, intervals: [30000] });
   await page.screenshot({ path: 'screenshots/Campaign/Campaign-5-enrolled.png', fullPage: true });
-  const rows = await detail.getByRole('listitem').allInnerTexts();
+  const rows = await main.getByRole('listitem').allInnerTexts();
   console.log('Enrolled rows:\n' + rows.join('\n---\n'));
-  console.log('Counters:', (await page.getByRole('region', { name: 'Test case 1, so far' }).innerText()).replace(/\s+/g, ' '));
 
   // 7. Sent folder of ashish.rai@appnox.ai shows the campaign emails
   await page.goto(`${BASE_URL}/mail`);

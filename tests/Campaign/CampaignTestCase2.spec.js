@@ -1,10 +1,10 @@
-// Campaigns > QA Test 3 > sequence "Test case 2": schedule an email to leads and check it in Mail > Sent
-//   1. Open the sequence. If an earlier run used it, delete it and create it again
-//      (leads that already got its email cannot be enrolled in it again)
-//   2. Send from ashish.rai@appnox.ai
+// Campaign "QA Auto - Test case 2", sequence "Test case 2": schedule an email to leads and check it in Mail > Sent
+//   1. Create the campaign and its sequence. The campaign left by the previous run is deleted first
+//      (a campaign has one sequence, and leads that already got its email cannot be enrolled in it again)
+//   2. Settings: send from ashish.rai@appnox.ai
 //   3. Add an email step with a subject and body, and save it
-//   4. Activate the sequence (leads can only be enrolled while it is active)
-//   5. Enroll leads: search each name in LEAD_NAMES and pick every lead found
+//   4. Activate the sequence (it needs a sending account and an email step with a body)
+//   5. Leads tab > Enroll leads: search each name in LEAD_NAMES and pick every lead found
 //   6. The email is scheduled for every enrolled lead
 //   7. Wait until the email has gone to every lead (about one email every 90 seconds, only in working hours)
 //   8. Mail > Sent: there is one email per lead
@@ -15,11 +15,13 @@
 const { test, expect } = require('@playwright/test');
 const { loginStaging } = require('../common/createDeal');
 const {
-  isSequenceUpdate, openCampaigns, openCampaign, openSequence, createSequence, deleteSequence, openEnrolled,
+  openCampaigns, openSection, createCampaign, deleteCampaignIfExists, createSequence, chooseSendingAccount,
+  activateSequence, openEnrolled, campaignTabs,
 } = require('../common/campaign');
 const { emailRows, openMail, useMailbox, openSent, scrollToEmailRow } = require('../common/mail');
 
-const CAMPAIGN = 'QA Test 3';
+// Created by this test on every run (only this test uses this name, so no other campaign is ever deleted)
+const CAMPAIGN = 'QA Auto - Test case 2';
 const SEQUENCE = 'Test case 2';
 const SENDER = 'ashish.rai@appnox.ai';
 const LEAD_NAMES = ['kunal', 'aman', 'ashish', 'shashank', 'vijay', 'shivang', 'abhijeet'];
@@ -29,20 +31,20 @@ const BODY = 'Hi {{firstName|there}},\n\n'
   + "We're checking that campaign emails are delivered and look right. Please ignore it.\n\n"
   + 'Thanks,\nAshish Rai';
 
-test('Campaign QA Test 3 - Test case 2: schedule an email to leads and check it in Sent', async ({ page }) => {
+test('Campaign QA Auto - Test case 2: schedule an email to leads and check it in Sent', async ({ page }) => {
   test.setTimeout(45 * 60 * 1000);
   const subject = `QA Test 3 - Test case 2 email ${currentTime()}`; // e.g. "... email 4 Nov, 13:31"
 
-  // Step 1: Open the sequence, and create it again if an earlier run used it
+  // Step 1: Create the campaign and its sequence (after deleting the one the previous run left)
   await loginStaging(page);
   await openCampaigns(page);
-  expect(await openCampaign(page, CAMPAIGN), `Campaign "${CAMPAIGN}" should exist`).toBe(true);
-  await openSequence(page, SEQUENCE);
-  await startWithEmptySequence(page);
+  await deleteCampaignIfExists(page, CAMPAIGN);
+  await createCampaign(page, CAMPAIGN);
+  await createSequence(page, SEQUENCE);
   await takeScreenshot(page, '1-sequence');
 
   // Step 2: Send from ashish.rai@appnox.ai
-  await chooseSender(page);
+  await chooseSendingAccount(page, SENDER);
 
   // Step 3: Add an email step with a subject and body, and save it
   await addEmailStep(page, subject);
@@ -81,62 +83,33 @@ test('Campaign QA Test 3 - Test case 2: schedule an email to leads and check it 
 
 // ---------------------------------------------------------------- Parts of the sequence page
 
-function sequenceDetail(page) {
-  return page.getByRole('region', { name: 'Sequence detail' });
-}
-
-function sendsFromDropdown(page) {
-  return page.getByRole('combobox', { name: 'Sends from' });
+// The campaign page (its tabs show one part at a time)
+function campaignPage(page) {
+  return page.getByRole('main');
 }
 
 function sequenceSteps(page) {
   return page.getByRole('list', { name: 'Sequence steps' }).getByRole('listitem');
 }
 
-// The status bar of the Enrolled view; its label reads e.g. "Scheduled 0, Active 0, Completed 10, ..."
+// The status bar of the Leads tab; its label reads e.g. "Scheduled 0, Active 0, Paused 0, Completed 10, Stopped 0"
 function statusSummary(page) {
-  return sequenceDetail(page).getByRole('img', { name: /^Scheduled \d+, Active \d+/ });
+  return campaignPage(page).getByRole('img', { name: /^Scheduled \d+, Active \d+/ });
 }
 
-// A lead's row in the Enrolled view
+// A lead's row in the Leads tab
 function enrolledRow(page, lead) {
-  return sequenceDetail(page).getByRole('listitem').filter({ has: page.getByText(lead.title, { exact: true }) });
+  return campaignPage(page).getByRole('listitem').filter({ has: page.getByText(lead.title, { exact: true }) });
 }
 
-// ---------------------------------------------------------------- Steps 1-4: the sequence and its email
-
-// Step 1: if an earlier run added a step or chose a sender, delete the sequence and create it again
-async function startWithEmptySequence(page) {
-  const steps = sequenceSteps(page);
-  // Wait for the steps to load: the sequence shows its steps, or "Add the first step"
-  await expect(steps.first().or(sequenceDetail(page).getByText('Add the first step'))).toBeVisible();
-  const hasSteps = (await steps.count()) > 0;
-  const hasSender = await sendsFromDropdown(page).evaluate(select => select.selectedIndex > 0);
-  if (hasSteps || hasSender) {
-    console.log(`"${SEQUENCE}" was used by an earlier run: deleting it and creating it again`);
-    await deleteSequence(page);
-    await createSequence(page, SEQUENCE);
-  }
-  await expect(steps).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Activate sequence' }), 'Cannot activate without a step').toBeDisabled();
-  await expect(sequenceDetail(page).getByRole('tab', { name: 'Steps' })).toHaveAttribute('aria-selected', 'true');
-}
-
-// Step 2: choose the sender (saved at once)
-async function chooseSender(page) {
-  await Promise.all([
-    page.waitForResponse(isSequenceUpdate),
-    sendsFromDropdown(page).selectOption(SENDER),
-  ]);
-  const chosen = await sendsFromDropdown(page).inputValue(); // e.g. "2-ashish.rai@appnox.ai"
-  expect(chosen.endsWith(SENDER), `The sender should be ${SENDER}`).toBe(true);
-}
+// ---------------------------------------------------------------- Steps 3: the email step
 
 // Step 3: "Email" adds a step called "New step"; fill in its subject and body, and save it
 async function addEmailStep(page, subject) {
+  await openSection(page, 'Sequence');
   const [addResponse] = await Promise.all([
     page.waitForResponse(res => /\/api\/sequences\/[^/]+\/steps$/.test(res.url()) && res.request().method() === 'POST'),
-    sequenceDetail(page).getByRole('button', { name: 'Email', exact: true }).click(),
+    campaignPage(page).getByRole('button', { name: 'Email', exact: true }).click(),
   ]);
   expect(addResponse.ok(), 'Adding the email step should succeed').toBe(true);
 
@@ -154,26 +127,18 @@ async function addEmailStep(page, subject) {
   expect(saveResponse.request().postDataJSON()).toMatchObject({ subject, body: BODY });
   await expect(sequenceSteps(page)).toHaveCount(1);
   await expect(sequenceSteps(page).first()).toContainText(`Step 1: ${subject}`);
-}
-
-// Step 4: activate the sequence; it starts "Sending" and the sender can no longer be changed
-async function activateSequence(page) {
-  await Promise.all([
-    page.waitForResponse(res => isSequenceUpdate(res) && res.request().postData().includes('isActive')),
-    page.getByRole('button', { name: 'Activate sequence' }).click(),
-  ]);
-  await expect(page.getByRole('button', { name: 'Pause sequence' })).toBeVisible();
-  await expect(page.getByRole('tab', { name: `${SEQUENCE} Sending`, exact: true })).toBeVisible();
-  await expect(sendsFromDropdown(page), 'The sender is locked while sending').toBeDisabled();
+  // Close the editor if it is still open
+  const close = campaignPage(page).getByRole('button', { name: 'Close', exact: true });
+  if (await close.isVisible()) await close.click();
 }
 
 // ---------------------------------------------------------------- Step 5: enroll leads
 
-// Opens "Enroll leads", searches each name and picks every lead found.
+// Opens "Enroll leads" on the Leads tab, searches each name and picks every lead found.
 // Returns the picked leads: [{ id, title, firstName, email }]
 async function pickLeads(page) {
   await openEnrolled(page);
-  await sequenceDetail(page).getByRole('button', { name: 'Enroll leads' }).first().click();
+  await campaignPage(page).getByRole('button', { name: 'Enroll leads' }).first().click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByText(`into ${SEQUENCE}`, { exact: true })).toBeVisible();
   const searchBox = dialog.getByRole('textbox', { name: 'Search leads by name' });
@@ -256,7 +221,7 @@ async function checkScheduled(page, enrolledLeads) {
     expect(statusOf(data, lead), `${lead.title} should be enrolled`).toMatch(/^(SCHEDULED|ACTIVE|COMPLETED)$/);
     await expect(enrolledRow(page, lead)).toBeVisible();
   }
-  await expect(sequenceDetail(page).getByText(`${enrolledLeads.length} people in this sequence`)).toBeVisible();
+  await expect(campaignPage(page).getByText(`${enrolledLeads.length} people in this sequence`)).toBeVisible();
   console.log('Right after enrolling:', await statusSummary(page).getAttribute('aria-label'));
 }
 
@@ -284,11 +249,11 @@ async function waitUntilSent(page, enrolledLeads) {
   return sentToLeads;
 }
 
-// Reloads the page, opens the sequence again and shows its Enrolled view. Returns { enrollments, statusCounts }.
+// Reloads the campaign page and shows its Leads tab. Returns { enrollments, statusCounts }.
 async function reloadAndOpenEnrolled(page) {
   await page.reload();
-  await openCampaign(page, CAMPAIGN);
-  await openSequence(page, SEQUENCE);
+  await expect(campaignTabs(page)).toBeVisible({ timeout: 30000 });
+  await expect(campaignPage(page).getByRole('heading', { name: CAMPAIGN, exact: true, level: 2 })).toBeVisible();
   return openEnrolled(page);
 }
 

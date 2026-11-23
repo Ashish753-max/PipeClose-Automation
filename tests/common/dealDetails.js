@@ -169,4 +169,45 @@ async function expectRejected(page, valid, invalid, message) {
   if (changed) await editField(page, valid);
 }
 
-module.exports = { openNewDeal, fieldRow, editField, expectSavedAfterReload, expectRejected, errorToast };
+/** Reloads the deal page and returns the deal as the API sends it to the page. */
+async function reloadDeal(page, id) {
+  const [response] = await Promise.all([
+    page.waitForResponse(r => r.url().endsWith(`/api/deals/get/${id}`) && r.request().method() === 'GET', { timeout: 30000 }),
+    page.reload(),
+  ]);
+  return (await response.json()).data;
+}
+
+/**
+ * Picks one of the Deals board's status filters ("All open deals", "All won deals", "All lost deals")
+ * and returns the ids of the deals it lists.
+ */
+async function showDeals(page, filter) {
+  const main = page.getByRole('main');
+  const menu = page.getByRole('dialog').filter({ has: page.getByRole('button', { name: 'Favorites' }) });
+  // The toolbar button shows the current filter ("Filter" until one is picked)
+  if (!(await menu.isVisible())) await main.getByRole('button', { name: /^(Filter|All (open|lost|won) deals)$/ }).click();
+  await expect(menu).toBeVisible();
+  // Match the filter in the URL: the board's own first load can still be arriving.
+  // Skip limit=1: the page keeps polling "limit=1&filter=open" for the open deals count.
+  const status = filter.split(' ')[1]; // "All lost deals" -> lost
+  const [list] = await Promise.all([
+    page.waitForResponse(r => {
+      if (!r.url().includes('/api/deals/get?')) return false;
+      const query = new URL(r.url()).searchParams;
+      return query.get('filter') === status && query.get('limit') !== '1';
+    }, { timeout: 30000 }),
+    menu.getByRole('button', { name: filter, exact: true }).click(),
+  ]);
+  // The menu stays open after a pick
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+  await expect(main.getByRole('button', { name: filter, exact: true }), 'Toolbar should show the chosen filter').toBeVisible();
+  const ids = (await list.json()).data.deals.map(d => d.id);
+  console.log(`${filter}: ${ids.length} deals`);
+  return ids;
+}
+
+module.exports = {
+  openNewDeal, fieldRow, editField, expectSavedAfterReload, expectRejected, errorToast, reloadDeal, showDeals,
+};

@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { openNewDeal } = require('../common/dealDetails');
+const { openNewDeal, reloadDeal, showDeals } = require('../common/dealDetails');
 
 // Marks a new deal as Lost (with a reason) or Won from its details page, then checks the Deals board
 // filter lists it under the right status only. Screenshots are saved in screenshots/DealWonLost/.
@@ -14,38 +14,6 @@ async function openDeal(page) {
   const id = Number(page.url().match(/\/deals\/(\d+)/)[1]);
   console.log(`Deal ${id}: "${title}"`);
   return { title, id };
-}
-
-/** Reloads the deal and returns it as the API sends it to the page. */
-async function reloadDeal(page, id) {
-  const [response] = await Promise.all([
-    page.waitForResponse(r => r.url().endsWith(`/api/deals/get/${id}`) && r.request().method() === 'GET', { timeout: 30000 }),
-    page.reload(),
-  ]);
-  return (await response.json()).data;
-}
-
-/** Picks one of the board's status filters and returns the ids of the deals it lists. */
-async function showDeals(page, filter) {
-  const main = page.getByRole('main');
-  const menu = page.getByRole('dialog').filter({ has: page.getByRole('button', { name: 'Favorites' }) });
-  // The toolbar button shows the current filter ("Filter" until one is picked)
-  if (!(await menu.isVisible())) await main.getByRole('button', { name: /^(Filter|All (open|lost|won) deals)$/ }).click();
-  await expect(menu).toBeVisible();
-  // Match the filter in the URL: the board's own first load can still be arriving
-  const status = filter.split(' ')[1]; // "All lost deals" -> lost
-  const [list] = await Promise.all([
-    page.waitForResponse(r => r.url().includes('/api/deals/get?') && new URL(r.url()).searchParams.get('filter') === status,
-      { timeout: 30000 }),
-    menu.getByRole('button', { name: filter, exact: true }).click(),
-  ]);
-  // The menu stays open after a pick
-  await page.keyboard.press('Escape');
-  await expect(menu).toBeHidden();
-  await expect(main.getByRole('button', { name: filter, exact: true }), 'Toolbar should show the chosen filter').toBeVisible();
-  const ids = (await list.json()).data.deals.map(d => d.id);
-  console.log(`${filter}: ${ids.length} deals`);
-  return ids;
 }
 
 /** Goes to the Deals board and checks the deal is listed under its status filter and no other. */
