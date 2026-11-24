@@ -22,11 +22,12 @@ const KEYS = {
   Description: 'description',
 };
 
-// Search box of each list (Timezone, Language, Currency)
+// Search box of each list (Timezone, Language, Currency; "Default currency" is the Profile page's)
 const SEARCH = {
   Timezone: /^Search by city, country or zone/,
   Language: /^Search language/,
   Currency: /^Search currency/,
+  'Default currency': /^Search currency/,
 };
 
 // ---------------------------------------------------------------- Company record
