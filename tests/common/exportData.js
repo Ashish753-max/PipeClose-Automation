@@ -177,4 +177,4 @@ function zipEntry(zip, name) {
   return null;
 }
 
-module.exports = { exportAllColumns };
+module.exports = { exportAllColumns, openExport, readRows };
