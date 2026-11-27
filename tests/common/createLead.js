@@ -39,7 +39,9 @@ async function addLead(page, prefix) {
   const orgField = page.getByRole('textbox', { name: 'Name' }).nth(1);
   await orgField.click();
   await orgField.pressSequentially(organization);
-  await page.getByRole('spinbutton', { name: 'Value' }).fill('2500');
+  // Staging dropped the Value field from the Add lead form (Nov 2026); fill it only where it is still shown
+  const valueField = page.getByRole('spinbutton', { name: 'Value' });
+  if (await valueField.count()) await valueField.fill('2500');
   await page.getByPlaceholder('Phone number').fill('9876543210');
   // Unique per run so it never clashes with an existing deal's email
   const email = `lead.details+${Date.now()}@gmail.com`;
