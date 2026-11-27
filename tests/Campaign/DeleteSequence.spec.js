@@ -67,3 +67,5 @@ test('TC_CAMPAIGN_05: Delete a sequence successfully', async ({ page }) => {
   await expect(main.getByText('No sequence in this campaign yet'), 'The sequence should be deleted on the server')
     .toBeVisible({ timeout: 30000 });
 });
+
+
